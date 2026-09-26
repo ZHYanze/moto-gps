@@ -1,0 +1,96 @@
+name: Build MOTO GPS IPA (unsigned / ad-hoc)
+
+# 在云端 macOS 上编译 iOS App，产出可直接拿去自签名的 IPA。
+# 本机 Windows / Linux 无法编译（缺 iOS SDK 与 Xcode），此流程绕过该限制。
+# 用法：Fork 本仓库为 Public → Actions → 选本流程 → Run workflow → 下载产物。
+
+on:
+  workflow_dispatch:
+    inputs:
+      bundle_id:
+        description: "Bundle Identifier（改成你自己的唯一标识）"
+        required: false
+        default: "org.example.motogps"
+      gateway_base_url:
+        description: "导航网关地址，结尾保留 /；只做演示导航可留默认"
+        required: false
+        default: "https://example.invalid/moto-gps/api/"
+      adhoc_sign:
+        description: "是否做 ad-hoc 签名（TrollStore / 巨魔建议 true）"
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - name: 检出源码（含子模块）
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: 打印工具链版本
+        run: |
+          xcode-select -p
+          xcodebuild -version
+          swift --version
+
+      - name: 安装 XcodeGen
+        run: |
+          brew install xcodegen
+          xcodegen --version
+
+      - name: 写入自己的 Bundle ID 与网关地址
+        run: |
+          cd platforms/ios
+          /usr/bin/sed -i '' "s|org\.example\.motogps|${{ inputs.bundle_id }}|g" project.yml
+          /usr/bin/sed -i '' "s|https://example\.invalid/moto-gps/api/|${{ inputs.gateway_base_url }}|g" project.yml
+          grep -n "PRODUCT_BUNDLE_IDENTIFIER\|MOTOGPSGatewayBaseURL" project.yml
+
+      - name: 生成 Xcode 工程
+        run: |
+          cd platforms/ios
+          xcodegen generate
+          ls -d MotoGPS.xcodeproj
+
+      - name: 编译 Release（跳过签名）
+        run: |
+          xcodebuild \
+            -project platforms/ios/MotoGPS.xcodeproj \
+            -scheme MotoGPS \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            build
+
+      - name: 打包 IPA
+        run: |
+          set -euo pipefail
+          APP_PATH=$(find "$PWD/build/DerivedData/Build/Products/Release-iphoneos" \
+            -maxdepth 1 -name "*.app" -type d | head -n 1)
+          echo "找到 App: $APP_PATH"
+          rm -rf Payload && mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          if [ "${{ inputs.adhoc_sign }}" = "true" ]; then
+            /usr/bin/codesign -s - --force --deep Payload/*.app || \
+              echo "ad-hoc 签名失败，继续产出未签名 IPA"
+          fi
+          zip -qry "MotoGPS-unsigned.ipa" Payload
+          ls -lh MotoGPS-unsigned.ipa
+          shasum -a 256 MotoGPS-unsigned.ipa
+
+      - name: 上传 IPA 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: MotoGPS-IPA
+          path: MotoGPS-unsigned.ipa
+          retention-days: 30
