@@ -268,7 +268,10 @@ export function createGateway({
       return;
     }
 
-    if (request.method === "POST" && requestUrl.pathname === "/v1/admin/warm-cache") {
+    if (request.method === "POST" &&
+        (requestUrl.pathname === "/v1/admin/warm-cache" ||
+         requestUrl.pathname === "/v1/admin/warm-cache/")) {
+      console.log(`[admin] warm-cache hit: pathname=${requestUrl.pathname}`);
       const adminToken = process.env.MOTO_ADMIN_TOKEN;
       if (!adminToken) {
         sendJson(response, 503,
