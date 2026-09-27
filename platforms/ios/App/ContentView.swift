@@ -660,8 +660,8 @@ struct ContentView: View {
     // MARK: - About developer sheet
 
     // 左上角"关于我"按钮。
-    // 图标优先用 `Assets.xcassets/AboutDeveloper.imageset/`(自画 Z logo SVG,
-    // 见 `E:\项目空间\esp32\Zlogo.svg` + docs/MEMORY);
+    // 图标用 `Assets.xcassets/AboutDeveloper.imageset/`(用户提供的透明 PNG,
+    // 1000×1000 缩放到 1x/2x/3x = 44/88/132 px,纯黑 Z + 右下小方块 + 透明背景);
     // 若 Asset Catalog 编译时该 image set 没被打包进 IPA(偶发),
     // 兜底显示 SF Symbol `info.circle`,保证按钮至少可见。
     // image name 用 `AboutDeveloper`(匹配 imageset 目录名,大小写不敏感但更规范)。
