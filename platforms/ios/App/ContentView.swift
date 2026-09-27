@@ -660,15 +660,19 @@ struct ContentView: View {
     // MARK: - About developer sheet
 
     // 左上角"关于我"按钮。
-    // 图标临时用 `person.crop.circle.fill` 作为占位(对应 fork 中"待用户提供 SVG 后"
-    // 替换成 `Image("aboutDeveloper")`);保留 `accessibilityIdentifier` 不变,
-    // 以便将来切换为图片资源时 UI 测试不需要改 selector。
+    // 图标用 `Assets.xcassets/AboutDeveloper.imageset/aboutDeveloper.png`(自画 SVG,
+    // 见 docs/MEMORY + 项目 `E:\项目空间\esp32\Zlogo.svg`)。
+    // 保留 `accessibilityIdentifier` 不变,UI 测试不需要改 selector。
     private var aboutDeveloperToolbarButton: some View {
         Button {
             searchFocused = false
             showsAboutDeveloper = true
         } label: {
-            Image(systemName: "person.crop.circle.fill")
+            Image("aboutDeveloper")
+                .resizable()
+                .interpolation(.high)
+                .frame(width: 26, height: 26)
+                .accessibilityHidden(true)
         }
         .accessibilityLabel("关于我")
         .accessibilityIdentifier("about-developer-button")
@@ -680,13 +684,12 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     // 顶部头像区
                     VStack(spacing: 12) {
-                        // TODO(等用户提供 SVG):把占位 SF Symbol 换成图片资源。
-                        // 1) 把 SVG 转成 PNG(建议 1x / 2x / 3x 三套,放进
-                        //    `platforms/ios/App/Assets.xcassets/AboutDeveloper.imageset/`)
-                        // 2) 把下方 `Image(systemName:)` 改成 `Image("aboutDeveloper")`
-                        Image(systemName: "person.crop.circle.fill")
-                            .font(.system(size: 56, weight: .ultraLight))
-                            .foregroundStyle(.blue)
+                        // 顶部头像:用 `Assets.xcassets/AboutDeveloper.imageset/` 同一套图。
+                        // 详细参数同上方的 `aboutDeveloperToolbarButton`。
+                        Image("aboutDeveloper")
+                            .resizable()
+                            .interpolation(.high)
+                            .frame(width: 72, height: 72)
                             .accessibilityHidden(true)
                         Text("关于我")
                             .font(.title2.weight(.semibold))

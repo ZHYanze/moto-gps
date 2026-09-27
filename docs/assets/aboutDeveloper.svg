@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Zlogo.svg
+  Logo for "About Me" button on iOS App.
+  Letter "Z" with rounded outer corners + small square in bottom-right, both
+  with white outline (halo) effect.
+
+  Source PNG: 1000x1000 (Zlogo.png)
+  This SVG normalises the same proportions on a 100x100 viewBox for easy reuse.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="100" height="100"
+     viewBox="0 0 100 100"
+     fill="none"
+     role="img"
+     aria-label="Z logo">
+  <!--
+    Layer 1: White halo (slightly bigger for the outer outline effect).
+    Each shape is offset by ~1.4 units outward to create the white "ring"
+    that surrounds the black letter Z and the small square.
+  -->
+  <g fill="white">
+    <rect x="13.0" y="13.1" width="74.0" height="23.5" rx="5.4" ry="5.4"/>
+    <polygon points="42.8,36.6 84.6,36.6 51.4,68.6 13.0,68.6"/>
+    <rect x="13.0" y="68.6" width="38.5" height="17.5" rx="5.4" ry="5.4"/>
+    <rect x="62.7" y="63.2" width="23.3" height="22.9" rx="3.0" ry="3.0"/>
+  </g>
+
+  <!-- Layer 2: The actual black Z + square, drawn on top. -->
+  <g fill="black">
+    <rect x="13.8" y="14.1" width="72.1" height="22.4" rx="4.2" ry="4.2"/>
+    <polygon points="43.2,36.5 83.6,36.5 51.6,68.5 13.8,68.5"/>
+    <rect x="13.8" y="68.5" width="37.8" height="17.1" rx="4.2" ry="4.2"/>
+    <rect x="63.2" y="63.5" width="22.7" height="22.1" rx="2.5" ry="2.5"/>
+  </g>
+</svg>
