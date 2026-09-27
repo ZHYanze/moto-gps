@@ -677,63 +677,60 @@ struct ContentView: View {
     private var aboutDeveloper: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // 顶部头像区:与"我的圆屏"页保持一致的居中布局。
-                    VStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 20) {
+                    // 顶部头像区
+                    VStack(spacing: 12) {
                         // TODO(等用户提供 SVG):把占位 SF Symbol 换成图片资源。
                         // 1) 把 SVG 转成 PNG(建议 1x / 2x / 3x 三套,放进
                         //    `platforms/ios/App/Assets.xcassets/AboutDeveloper.imageset/`)
                         // 2) 把下方 `Image(systemName:)` 改成 `Image("aboutDeveloper")`
                         Image(systemName: "person.crop.circle.fill")
-                            .font(.system(size: 64, weight: .ultraLight))
+                            .font(.system(size: 56, weight: .ultraLight))
                             .foregroundStyle(.blue)
                             .accessibilityHidden(true)
                         Text("关于我")
                             .font(.title2.weight(.semibold))
                         Text("MOTO GPS · 个人修改版")
-                            .font(.subheadline)
+                            .font(.footnote)
                             .foregroundStyle(Color.secondary)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.top, 8)
-                    .padding(.bottom, 4)
+                    .padding(.top, 4)
+                    .padding(.bottom, 8)
 
                     Divider()
 
-                    // 项目说明段
+                    // 1. 项目说明
                     aboutSection(
                         title: "项目说明",
-                        body: """
-                        本项目基于 GitHub 开源项目修改部署，源代码遵循原作者许可。
-                        除地图瓦片外,所有数据均留存本地,不会上传到任何第三方服务器。
-                        """
+                        rows: [
+                            .text("本项目基于 GitHub 开源项目修改部署。"),
+                            .text("除地图外,所有数据均留存本地。")
+                        ]
                     )
 
-                    // 联系段
+                    // 2. 联系与主页
                     aboutSection(
                         title: "联系与主页",
-                        body: """
-                        GitHub 主页:
-                        https://github.com/ZHYanze/moto-gps
-
-                        Telegram:
-                        t.me/ZHYanze
-                        """
+                        rows: [
+                            .link(label: "GitHub 主页", display: "github.com/ZHYanze/moto-gps", url: "https://github.com/ZHYanze/moto-gps"),
+                            .link(label: "TG",            display: "t.me/ZHYanze",               url: "https://t.me/ZHYanze")
+                        ]
                     )
 
-                    // 自部署段
+                    // 3. 自行搭建
                     aboutSection(
-                        title: "想研究或自行搭建",
-                        body: """
-                        想自己研究或自行搭建,可以联系我,进群交流,需要一定基础。
-                        成本很低,一个设备 200+,其他几乎零成本。
-                        """
+                        title: "自行搭建交流",
+                        rows: [
+                            .text("想研究自行搭建可以联系我,进群交流,需要一定基础。"),
+                            .text("成本很低,一个设备 200+,其他几乎零成本。")
+                        ]
                     )
 
-                    Spacer(minLength: 12)
+                    Spacer(minLength: 8)
                 }
                 .padding(.horizontal, 20)
-                .padding(.vertical, 16)
+                .padding(.vertical, 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .navigationTitle("关于我")
@@ -750,20 +747,55 @@ struct ContentView: View {
         .presentationDragIndicator(.visible)
     }
 
-    /// "关于我"页面里一节标题 + 正文段落。
-    /// `body` 里的整词 URL(`https://...` / `t.me/...`)会被 SwiftUI 自动识别为可点击链接。
-    private func aboutSection(title: String, body: String) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+    /// `AboutRow` 用来表示"关于我"页面里的一行条目,
+    /// 要么是一段纯文本(`.text`),要么是 "前缀说明 + 可点击链接"(`.link`)。
+    private enum AboutRow {
+        case text(String)
+        case link(label: String, display: String, url: String)
+    }
+
+    /// "关于我"页面里一节(标题 + 多行条目)。
+    /// - 标题:`Text(title)`,`subheadline` + `weight(.semibold)` + `.secondary`,中等灰
+    /// - 每行可以是纯文本(`.text`)或者"前缀 + 链接"(`.link`),
+    ///   `.link` 用 `Link(destination:)` 包装,确保 iOS 13+ 都能点开。
+    private func aboutSection(title: String, rows: [AboutRow]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.headline)
-                .foregroundStyle(Color.primary)
-            // LocalizedStringKey + tint(.blue) 让整词 URL 自动变成蓝色可点击链接
-            Text(LocalizedStringKey(body))
-                .font(.body)
-                .foregroundStyle(Color.primary)
-                .fixedSize(horizontal: false, vertical: true)
-                .tint(.blue)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.secondary)
+                .textCase(nil)
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                    switch row {
+                    case .text(let text):
+                        Text(text)
+                            .font(.body)
+                            .foregroundStyle(Color.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    case .link(let label, let display, let url):
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            Text(label)
+                                .font(.body)
+                                .foregroundStyle(Color.primary)
+                            if let parsed = URL(string: url) {
+                                Link(display, destination: parsed)
+                                    .font(.body)
+                                    .foregroundStyle(.blue)
+                                    .underline()
+                            } else {
+                                Text(display)
+                                    .font(.body)
+                                    .foregroundStyle(Color.secondary)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                    }
+                }
+            }
+            .padding(.leading, 4)
         }
+        .padding(.vertical, 4)
     }
 
     private func statusRow(_ title: String, symbol: String, value: String, color: Color) -> some View {
