@@ -15,7 +15,6 @@ struct ContentView: View {
     @State private var showsDeviceDetails = false
     @State private var showsMapDownloads = false
     @State private var showsDataUse = false
-    @State private var showsGatewaySettings = false
     @State private var showsAboutDeveloper = false
 
     var body: some View {
@@ -46,7 +45,6 @@ struct ContentView: View {
             )
         }
         .sheet(isPresented: $showsDataUse) { DataUseView() }
-        .sheet(isPresented: $showsGatewaySettings) { GatewaySettingsView(model: model) }
         .sheet(isPresented: $showsAboutDeveloper) { aboutDeveloper }
     }
 
@@ -657,6 +655,115 @@ struct ContentView: View {
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
+    }
+
+    // MARK: - About developer sheet
+
+    // 左上角"关于我"按钮。
+    // 图标临时用 `person.crop.circle.fill` 作为占位(对应 fork 中"待用户提供 SVG 后"
+    // 替换成 `Image("aboutDeveloper")`);保留 `accessibilityIdentifier` 不变,
+    // 以便将来切换为图片资源时 UI 测试不需要改 selector。
+    private var aboutDeveloperToolbarButton: some View {
+        Button {
+            searchFocused = false
+            showsAboutDeveloper = true
+        } label: {
+            Image(systemName: "person.crop.circle.fill")
+        }
+        .accessibilityLabel("关于我")
+        .accessibilityIdentifier("about-developer-button")
+    }
+
+    private var aboutDeveloper: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    // 顶部头像区:与"我的圆屏"页保持一致的居中布局。
+                    VStack(spacing: 14) {
+                        // TODO(等用户提供 SVG):把占位 SF Symbol 换成图片资源。
+                        // 1) 把 SVG 转成 PNG(建议 1x / 2x / 3x 三套,放进
+                        //    `platforms/ios/App/Assets.xcassets/AboutDeveloper.imageset/`)
+                        // 2) 把下方 `Image(systemName:)` 改成 `Image("aboutDeveloper")`
+                        Image(systemName: "person.crop.circle.fill")
+                            .font(.system(size: 64, weight: .ultraLight))
+                            .foregroundStyle(.blue)
+                            .accessibilityHidden(true)
+                        Text("关于我")
+                            .font(.title2.weight(.semibold))
+                        Text("MOTO GPS · 个人修改版")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 8)
+                    .padding(.bottom, 4)
+
+                    Divider()
+
+                    // 项目说明段
+                    aboutSection(
+                        title: "项目说明",
+                        body: """
+                        本项目基于 GitHub 开源项目修改部署，源代码遵循原作者许可。
+                        除地图瓦片外,所有数据均留存本地,不会上传到任何第三方服务器。
+                        """
+                    )
+
+                    // 联系段
+                    aboutSection(
+                        title: "联系与主页",
+                        body: """
+                        GitHub 主页:
+                        https://github.com/ZHYanze/moto-gps
+
+                        Telegram:
+                        t.me/ZHYanze
+                        """
+                    )
+
+                    // 自部署段
+                    aboutSection(
+                        title: "想研究或自行搭建",
+                        body: """
+                        想自己研究或自行搭建,可以联系我,进群交流,需要一定基础。
+                        成本很低,一个设备 200+,其他几乎零成本。
+                        """
+                    )
+
+                    Spacer(minLength: 12)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .navigationTitle("关于我")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("完成") { showsAboutDeveloper = false }
+                        .accessibilityIdentifier("about-developer-done")
+                }
+            }
+            .accessibilityIdentifier("about-developer-sheet")
+        }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+    }
+
+    /// "关于我"页面里一节标题 + 正文段落。
+    /// `body` 里的整词 URL(`https://...` / `t.me/...`)会被 SwiftUI 自动识别为可点击链接。
+    private func aboutSection(title: String, body: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(Color.primary)
+            // LocalizedStringKey + tint(.blue) 让整词 URL 自动变成蓝色可点击链接
+            Text(LocalizedStringKey(body))
+                .font(.body)
+                .foregroundStyle(Color.primary)
+                .fixedSize(horizontal: false, vertical: true)
+                .tint(.blue)
+        }
     }
 
     private func statusRow(_ title: String, symbol: String, value: String, color: Color) -> some View {
