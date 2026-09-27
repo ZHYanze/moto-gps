@@ -6,6 +6,10 @@ import { validateCityKeywords } from "./amap-cities.js";
 
 const DEFAULT_MAX_BODY_BYTES = 8192;
 const RATE_WINDOW_MS = 60_000;
+// Admin token required for the cache-warming endpoint. Pre-warm triggers hundreds
+// of upstream tile reads; without auth it would expose the map source to abuse.
+const WARM_CACHE_MAX_BBOX_TILES = 5000;
+const WARM_CACHE_CONCURRENCY = 16;
 
 class BodyReadError extends Error {
   constructor(code, message) {
@@ -61,6 +65,42 @@ function safeError(error) {
     message: knownCode ? String(error.message).slice(0, 160) : "route request failed",
     retryable: knownCode ? error.retryable !== false : true,
   };
+}
+
+// Constant-time string comparison to defeat timing attacks on the admin token.
+function safeEqual(a, b) {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  const bufA = Buffer.from(a, "utf8");
+  const bufB = Buffer.from(b, "utf8");
+  if (bufA.length !== bufB.length) return false;
+  let diff = 0;
+  for (let i = 0; i < bufA.length; i++) diff |= bufA[i] ^ bufB[i];
+  return diff === 0;
+}
+
+// Pre-warm backend cache by fetching every tile in the bounding box. Runs as a
+// background task so the HTTP request returns immediately. Subsequent iPhone
+// downloads hit the cache (no Cloudflare/frpc round-trip per tile).
+async function warmCacheInBackground(mapProvider, tiles) {
+  const queue = tiles.slice();
+  let warmed = 0;
+  let errors = 0;
+  const concurrency = Math.min(WARM_CACHE_CONCURRENCY, queue.length);
+  await Promise.all(Array.from({ length: concurrency }, async () => {
+    while (queue.length > 0) {
+      const tile = queue.shift();
+      if (!tile) return;
+      try {
+        await mapProvider.getTile(tile.z, tile.x, tile.y);
+        warmed++;
+      } catch (error) {
+        errors++;
+        console.warn(`[warm-cache] tile ${tile.z}/${tile.x}/${tile.y} failed: ${error.message}`);
+      }
+    }
+  }));
+  const status = mapProvider.status?.();
+  return { total: tiles.length, warmed, errors, cacheTiles: status?.cache?.tiles ?? null };
 }
 
 function validatePlaceQuery(requestUrl) {
@@ -222,6 +262,82 @@ export function createGateway({
       } catch (error) {
         const publicError = safeError(error);
         if (publicError.code === "MAP_BUSY") response.setHeader("Retry-After", "5");
+        sendJson(response, publicError.code === "INVALID_REQUEST" ? 400 : 503,
+          { protocol_version: 1, error: publicError }, allowedOrigin);
+      }
+      return;
+    }
+
+    if (request.method === "POST" && requestUrl.pathname === "/v1/admin/warm-cache") {
+      const adminToken = process.env.MOTO_ADMIN_TOKEN;
+      if (!adminToken) {
+        sendJson(response, 503,
+          { protocol_version: 1, error: {
+            code: "SERVER_MISCONFIGURED",
+            message: "admin endpoints disabled (set MOTO_ADMIN_TOKEN)",
+            retryable: false,
+          } }, allowedOrigin);
+        return;
+      }
+      const provided = request.headers["x-admin-token"];
+      if (typeof provided !== "string" || !safeEqual(provided, adminToken)) {
+        sendJson(response, 401,
+          { protocol_version: 1, error: {
+            code: "UNAUTHORIZED", message: "missing or invalid X-Admin-Token", retryable: false,
+          } }, allowedOrigin);
+        return;
+      }
+      try {
+        const body = await readJsonBody(request, 1024);
+        if (!body || typeof body !== "object" || !body.bbox || typeof body.bbox !== "object") {
+          throw new BodyReadError("INVALID_REQUEST", "bbox is required");
+        }
+        const bbox = body.bbox;
+        const z = Number(bbox.z ?? 15);
+        const xMin = Number(bbox.xMin);
+        const xMax = Number(bbox.xMax);
+        const yMin = Number(bbox.yMin);
+        const yMax = Number(bbox.yMax);
+        if (![z, xMin, xMax, yMin, yMax].every(Number.isInteger) ||
+            z !== 15 || xMin < 0 || xMax < xMin || yMin < 0 || yMax < yMin) {
+          throw new BodyReadError("INVALID_REQUEST",
+            "bbox must be { z:15, xMin<=xMax, yMin<=yMax, all non-negative integers }");
+        }
+        validateTileCoordinates(z, xMin, yMin);
+        validateTileCoordinates(z, xMax, yMax);
+        const totalTiles = (xMax - xMin + 1) * (yMax - yMin + 1);
+        if (totalTiles > WARM_CACHE_MAX_BBOX_TILES) {
+          throw new BodyReadError("INVALID_REQUEST",
+            `bbox too large (${totalTiles} tiles, max ${WARM_CACHE_MAX_BBOX_TILES})`);
+        }
+        if (!mapProvider || typeof mapProvider.getTile !== "function") {
+          throw new BodyReadError("MAP_DISABLED", "surrounding map source is disabled");
+        }
+        // Build tile list (deterministic order; spreads upstream PMTiles range reads).
+        const tiles = [];
+        for (let x = xMin; x <= xMax; x++) {
+          for (let y = yMin; y <= yMax; y++) tiles.push({ z, x, y });
+        }
+        // Fire-and-forget: pre-warm runs in the background so the HTTP request returns
+        // immediately and is not blocked by thousands of upstream tile reads.
+        const startedAt = Date.now();
+        warmCacheInBackground(mapProvider, tiles).then((stats) => {
+          console.log(
+            `[warm-cache] complete: ${stats.warmed}/${stats.total} tiles ` +
+            `(${stats.cacheHits} cache hits, ${stats.errors} errors) in ` +
+            `${((Date.now() - startedAt) / 1000).toFixed(1)}s`);
+        }).catch((error) => {
+          console.error(`[warm-cache] failed: ${error.message}`);
+        });
+        sendJson(response, 202, {
+          protocol_version: 1,
+          accepted: true,
+          total_tiles: totalTiles,
+          estimated_seconds: Math.ceil(totalTiles / WARM_CACHE_CONCURRENCY * 0.5),
+          hint: "poll /healthz map_source.cache.tiles for progress",
+        }, allowedOrigin);
+      } catch (error) {
+        const publicError = safeError(error);
         sendJson(response, publicError.code === "INVALID_REQUEST" ? 400 : 503,
           { protocol_version: 1, error: publicError }, allowedOrigin);
       }

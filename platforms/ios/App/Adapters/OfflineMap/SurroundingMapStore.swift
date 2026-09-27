@@ -537,6 +537,7 @@ final class SurroundingMapStore: ObservableObject {
                 var completed = 0
                 var verifiedBytes: Int64 = 0
                 var firstError: Error?
+                let startedAt = Date()  // for live KB/s + ETA display
                 await withTaskGroup(of: (MapTileID, Int64, Error?).self) { group in
                     var iterator = tiles.makeIterator()
                     // 启动第一批
@@ -572,7 +573,19 @@ final class SurroundingMapStore: ObservableObject {
                         }
                         self.downloadProgress = Double(completed) / Double(total)
                         let size = ByteCountFormatter.string(fromByteCount: verifiedBytes, countStyle: .file)
-                        self.downloadMessage = "已下载 \(size) · \(Int(self.downloadProgress * 100))%"
+                        // 实时 KB/s + ETA。空海域 tile 每个只 400 字节,光看累计字节数会让用户感觉"1-2 KB/s"。
+                        // 显示实际吞吐速度,用户能看到真实下载快慢。
+                        let elapsed = max(0.1, Date().timeIntervalSince(startedAt))
+                        let bytesPerSec = Double(verifiedBytes) / elapsed
+                        let speed = ByteCountFormatter.string(fromByteCount: Int64(bytesPerSec), countStyle: .file)
+                        var etaText = ""
+                        if completed > 0 && completed < total {
+                            let remaining = Double(total - completed) / Double(completed) * elapsed
+                            if remaining.isFinite && remaining > 0 {
+                                etaText = " · 剩余 \(formatETA(seconds: remaining))"
+                            }
+                        }
+                        self.downloadMessage = "已下载 \(size) · \(Int(self.downloadProgress * 100))% · \(speed)/s\(etaText)"
                     }
                 }
                 guard self.downloadGeneration == current else { return }
@@ -593,6 +606,18 @@ final class SurroundingMapStore: ObservableObject {
             self.activeDownloadID = nil
             await self.reloadPacks()
         }
+    }
+
+    /// Formats a duration in seconds as a short localized string like "1 分 23 秒".
+    private func formatETA(seconds: Double) -> String {
+        let total = Int(seconds.rounded())
+        if total < 60 { return "\(total) 秒" }
+        let minutes = total / 60
+        let secs = total % 60
+        if minutes < 60 { return "\(minutes) 分 \(secs) 秒" }
+        let hours = minutes / 60
+        let mins = minutes % 60
+        return "\(hours) 小时 \(mins) 分"
     }
 
     func cancelDownload() {
