@@ -1,0 +1,49 @@
+# 在你现有的 docker-compose.yml 里加这两个 services,然后 docker compose up -d
+#
+# 准备:
+#   1. 把 NAS 上的 PMTiles 文件软链(更省 inode)或拷贝到一个目录,例如:
+#        mkdir -p /volume1/docker/moto-gps/pmtiles
+#        ln -s /volume1/你的实际路径/china.pmtiles /volume1/docker/moto-gps/pmtiles/china.pmtiles
+#   2. 把本文件 `deploy/pmtiles-nginx.conf` 上传到 NAS,放到
+#        /volume1/docker/moto-gps/pmtiles-nginx.conf
+#
+# 然后在 docker-compose.yml 里加 services 节:
+
+  # === PMTiles 自托管 sidecar(新增) ===
+  pmtiles:
+    image: nginx:1.27-alpine
+    container_name: moto-gps-pmtiles
+    restart: unless-stopped
+    # /volume1/docker/moto-gps/pmtiles 是宿主目录,里面放 china.pmtiles
+    volumes:
+      - /volume1/docker/moto-gps/pmtiles:/usr/share/nginx/html:ro
+      - /volume1/docker/moto-gps/pmtiles-nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    # internal-only,docker network 内可访问,主机和外部都不可达
+    expose:
+      - "80"
+    networks:
+      - moto-gps-net  # 改成你现有 backend 用的网络名
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # === 把 env 注入到 moto-gps-backend(改你已有的 service) ===
+  moto-gps-backend:
+    # ... 你之前的配置 ...
+    environment:
+      # 其他 env 保留,然后加这一行:
+      MOTO_MAP_PMTILES_URL: "http://pmtiles/china.pmtiles"
+      # 缓存目录(可选,放到 SSD):
+      MOTO_MAP_CACHE_DIR: "/app/.cache/map-tiles"
+    depends_on:
+      pmtiles:
+        condition: service_healthy
+    networks:
+      - moto-gps-net
+
+# === 顶层 networks(第一次用就加,已有就跳过) ===
+networks:
+  moto-gps-net:
+    driver: bridge

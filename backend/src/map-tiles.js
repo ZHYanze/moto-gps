@@ -132,11 +132,37 @@ async function boundedDecompress(data, compression) {
   return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 }
 
+// 安全规则:只允许 https PMTiles 来源,除非 host 在可信内部网络白名单里
+// (允许 NAS 自托管 PMTiles 用 docker-compose internal host name,如 `pmtiles`,
+// 或 RFC1918 内网 IP,这样部署者可以放心自托管,但防止有人误把 PMTiles URL
+// 指向某个公网 http URL,被中间人注入恶意 tile)。
+const TRUSTED_INTERNAL_HOSTS = new Set([
+  "pmtiles", "pmtiles-server", "nginx",
+  "127.0.0.1", "localhost",
+]);
+function isInternalHost(hostname) {
+  if (TRUSTED_INTERNAL_HOSTS.has(hostname)) return true;
+  // RFC1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
+  const parts = hostname.split(".");
+  if (parts.length === 4 && parts.every((p) => /^\d+$/.test(p))) {
+    const [a, b] = [Number(parts[0]), Number(parts[1])];
+    if (a === 10) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+  }
+  // .internal docker DNS
+  if (hostname.endsWith(".internal")) return true;
+  return false;
+}
+
 function validatedSourceUrl(value) {
   let url;
   try { url = new URL(value); } catch { throw new TypeError("map source must be an HTTPS PMTiles URL"); }
-  if (url.protocol !== "https:" || url.username || url.password || url.hash || !url.pathname.endsWith(".pmtiles")) {
-    throw new TypeError("map source must be an HTTPS PMTiles URL without credentials or fragment");
+  const isHttps = url.protocol === "https:";
+  const isHttpInternal = url.protocol === "http:" && isInternalHost(url.hostname);
+  if ((!isHttps && !isHttpInternal) || url.username || url.password ||
+      url.hash || !url.pathname.endsWith(".pmtiles")) {
+    throw new TypeError("map source must be an HTTPS PMTiles URL (or an internal HTTP URL on a trusted host)");
   }
   return url.href;
 }
