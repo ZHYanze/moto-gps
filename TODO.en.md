@@ -24,7 +24,7 @@ Status convention: `[ ]` not started, `[x]` completed. Each item is marked with 
 - [x] **(A/B)** Completed the visual re-check state by state with the Web `deviceState=offline|connecting|success|ready|planning`; shared native tests 8/8, Swift checks 10/10, and the Web and ESP32-S3 builds all pass
 - [x] **(A/B)** Raise the app demo preview to continuous 25 Hz interpolation, merge BLE navigation snapshots to 5 Hz at the protocol limit, deduplicate route geometry by signature and send physical fragments at 15 ms intervals
 - [x] **(A/B)** Decouple ESP32 BLE reception from LVGL drawing: the receive thread only submits the latest state, and a separate low-priority task merges the navigation, map, IMU and media refreshes; host tests 8/8, the ESP-IDF build and continuous map transfer on real hardware pass
-- [x] **(B)** Generate and integrate the complete Jinan offline SQLite vector package: 47,468 roads, 26,702 buildings; the iPhone only sends the round display a limited window around the current position
+- [x] **(B)** Generate and integrate the complete Dalian offline SQLite vector package: about 34k roads and 34k buildings; the iPhone only sends the round display a limited window around the current position
 - [x] **(B)** Fix the issue where ENC_CHANGE/SUBSCRIBE arriving before CONNECT cleared the handshake state when the ESP32 restored pairing; currently three consecutive iPhone app cold starts have all completed the handshake on the first attempt
 - [x] **(B)** Implement software power-off on holding PWR for 3 seconds, and configure and read-back verify the AXP2101 4-second hold hardware power-off fallback
 - [x] **(B)** Pass encode/decode tests on both the C++ and Swift sides with the same set of protocol fixtures

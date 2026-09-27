@@ -224,7 +224,7 @@
     let previousTime = performance.now();
 
     const sceneUrl = new URL(
-      "../../../shared/demo_fixture/jinan_map_scene_sample.json",
+      "../../../shared/demo_fixture/dalian_map_scene_sample.json",
       location.href,
     );
     const routeUrl = new URL(

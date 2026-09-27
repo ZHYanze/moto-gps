@@ -13,7 +13,7 @@ What is published here is a development snapshot of the Waveshare production-boa
 | Pending regression | The route on real hardware differs from the app preview, detours occur | Route-selection transfer already has logic and automated tests, but the corresponding cross-city on-bike regression has not been completed |
 | Pending regression | Page flipping / a sense of tearing during fast turns | Double buffering, interpolation and CO5300 TE synchronisation logic already exist; the actual smoothness, sustained frame rate and power draw still need to be measured |
 | Inherent boundary | Absolute north when stationary | The QMI8658 has only an accelerometer and a gyroscope and no magnetometer. With the phone in a bag, the phone body's orientation must not be treated as the direction the bike is facing |
-| Inherent boundary | Background road network outside Jinan | The bundled OSM data covers Jinan only; other cities have no equivalent offline grey-road/building coverage, which does not mean the route API does not support that city |
+| Inherent boundary | Background road network outside Dalian | The bundled OSM data covers Dalian only; other cities have no equivalent offline grey-road/building coverage, which does not mean the route API does not support that city |
 | Inherent boundary | Speed limits, missing buildings | Depends on real data coverage, no fictitious content is drawn in to fill the gaps; the route service does not always give a trustworthy legal speed limit |
 | Not accepted | Battery life, power-off on combined USB/battery supply, water resistance, vibration resistance, riding safety | The production development board is not a project-certified automotive-grade device |
 

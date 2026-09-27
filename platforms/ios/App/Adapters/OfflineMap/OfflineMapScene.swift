@@ -133,7 +133,7 @@ protocol OfflineMapSceneQuerying: Sendable {
 
 /// A replaceable spatial-index implementation for the bundled EVT fixture.
 /// It deliberately keeps no SQLite dependency in the app target.  The full
-/// Jinan pack can replace this behind OfflineMapSceneQuerying with SQLite
+/// Dalian pack can replace this behind OfflineMapSceneQuerying with SQLite
 /// R-tree without changing BLE or AppModel code.
 struct InMemoryOfflineMapSceneIndex: OfflineMapSceneQuerying {
     private struct Bounds: Sendable {

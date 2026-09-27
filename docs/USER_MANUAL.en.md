@@ -114,8 +114,8 @@ recovers; this is not a traffic stream that updates live every second.
 Traffic is currently used in route summaries and the circular progress arc. Complete red/yellow/green
 colouring of individual route segments is still being developed, and traffic-light countdown is not connected.
 
-Grey roads and buildings now load online by default and are no longer limited to Jinan. When the
-network fails, the App uses downloaded regions, recent cache and the bundled Jinan base map; uncovered
+Grey roads and buildings now load online by default and are no longer limited to Dalian. When the
+network fails, the App uses downloaded regions, recent cache and the bundled Dalian base map; uncovered
 areas may be missing. Completeness depends on local OSM data, and the display selects features within
 its capacity. See section 10 for downloads.
 
@@ -160,9 +160,10 @@ the phone's "Music" app can play at all, then check the media permission and the
 ## 8. Demo navigation and ending navigation
 
 On the phone's home page tap "Demo navigation". The demo uses the scenario from near Building D of
-the Jinan Big Data Industry Base to near the Inspur headquarters, requests a live route first when
-online and falls back to the built-in OSM track when that fails. Once you are in, the phone keeps
-showing "demo", and the movement, speed and distance on screen are simulated input.
+the Jinan Big Data Industry Base to near the Inspur headquarters (navigation demo fixture, unrelated
+to the bundled map), requests a live route first when online and falls back to the built-in OSM
+track when that fails. Once you are in, the phone keeps showing "demo", and the movement, speed
+and distance on screen are simulated input.
 
 The demo suits checking turns, touch, the map and the connection at a desk. It cannot demonstrate
 real-road accuracy, background operation with the screen locked or live traffic. To use a real
@@ -198,7 +199,7 @@ working route planning alone does not prove that the map source is available.
 ### Download a city or district
 
 1. Open "Maps and offline downloads" from home, then "Download city map".
-2. Search for a city or district, such as "上海" or "历下区", and choose a result.
+2. Search for a city or district, such as "上海" or "中山区", and choose a result.
 3. Review the blue download boundary, then tap "Download map". It is the administrative area's
    bounding rectangle, so its edges may include neighbouring areas.
 4. Choose a smaller district if the area is too large. "Download incomplete" does not mean the whole area is saved.
@@ -216,7 +217,7 @@ including an accepted reroute.
   "Continue download" on a saved item. Downloads can resume after an App restart; uninterrupted
   background downloading after screen lock is not guaranteed.
 - Swipe a saved item left to delete it. "Clear automatic cache" preserves manual downloads. The
-  bundled Jinan base map remains part of the App.
+  bundled Dalian base map remains part of the App.
 - Automatic cache is limited to 128 MiB and manual downloads to 512 MiB in total. Cities and routes
   share stored tiles. Limits count file contents; actual disk use can be slightly higher. Oversized
   regions or routes are rejected and require a smaller scope.

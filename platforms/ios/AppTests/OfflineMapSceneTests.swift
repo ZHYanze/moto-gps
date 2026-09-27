@@ -5,12 +5,12 @@ import XCTest
 
 @MainActor
 final class OfflineMapSceneTests: XCTestCase {
-    func testJinrunGardenHasRealRoadsAndBuildingsInBundledCityPack() throws {
-        let url = try XCTUnwrap(Bundle.main.url(forResource: "jinan-v1", withExtension: "sqlite"))
+    func testZhongshanSquareHasRealRoadsAndBuildingsInBundledCityPack() throws {
+        let url = try XCTUnwrap(Bundle.main.url(forResource: "dalian-v1", withExtension: "sqlite"))
         let repository = try SQLiteOfflineMapSceneIndex(url: url)
-        // GCJ-02, converted once from the Jinrun Garden WGS84 entrance fix.
+        // GCJ-02 of Dalian Zhongshan Square.
         let window = repository.query(
-            around: OfflineMapPointE6(latitudeE6: 36_632_524, longitudeE6: 116_949_089),
+            around: OfflineMapPointE6(latitudeE6: 38_918_500, longitudeE6: 121_630_800),
             radiusM: 500, revision: 1
         )
         XCTAssertFalse(window.roads.isEmpty)
@@ -25,27 +25,27 @@ final class OfflineMapSceneTests: XCTestCase {
         let invalid = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: invalid) }
         try Data("incomplete download".utf8).write(to: invalid)
-        let bundled = try XCTUnwrap(Bundle.main.url(forResource: "jinan-v1", withExtension: "sqlite"))
+        let bundled = try XCTUnwrap(Bundle.main.url(forResource: "dalian-v1", withExtension: "sqlite"))
         let index = try OfflineMapSceneCoordinator.loadIndex(
             databaseURLs: [invalid, bundled], sampleURL: nil
         )
         let window = index.query(
-            around: OfflineMapPointE6(latitudeE6: 36_632_524, longitudeE6: 116_949_089),
+            around: OfflineMapPointE6(latitudeE6: 38_918_500, longitudeE6: 121_630_800),
             radiusM: 500, revision: 1
         )
         XCTAssertFalse(window.roads.isEmpty)
         XCTAssertFalse(window.buildings.isEmpty)
     }
 
-    func testFullJinanSQLitePackIsBundledAndQueryable() throws {
-        guard let url = Bundle.main.url(forResource: "jinan-v1", withExtension: "sqlite") else {
-            XCTFail("jinan-v1.sqlite is missing from the application bundle")
+    func testFullDalianSQLitePackIsBundledAndQueryable() throws {
+        guard let url = Bundle.main.url(forResource: "dalian-v1", withExtension: "sqlite") else {
+            XCTFail("dalian-v1.sqlite is missing from the application bundle")
             return
         }
         XCTAssertGreaterThan(try Data(contentsOf: url, options: .mappedIfSafe).count, 1_000_000)
         let repository = try SQLiteOfflineMapSceneIndex(url: url)
         let window = repository.query(
-            around: OfflineMapPointE6(latitudeE6: 36_675_246, longitudeE6: 117_128_578),
+            around: OfflineMapPointE6(latitudeE6: 38_890_800, longitudeE6: 121_576_500),
             radiusM: 500,
             revision: 77
         )
@@ -217,7 +217,7 @@ final class OfflineMapSceneTests: XCTestCase {
 
     private func loadDocument() throws -> OfflineMapSceneDocument {
         guard let url = Bundle(for: Self.self).url(
-            forResource: "jinan_map_scene_sample",
+            forResource: "dalian_map_scene_sample",
             withExtension: "json"
         ) else { throw OfflineMapSceneError.resourceMissing }
         return try OfflineMapSceneDocument.decode(Data(contentsOf: url))

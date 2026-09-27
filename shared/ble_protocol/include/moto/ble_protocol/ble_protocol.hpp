@@ -48,7 +48,7 @@ constexpr std::size_t kDefaultMaxMessageSize = 4'096;
 // display window, not the phone's complete provider route.
 constexpr std::size_t kMaxRoutePointsPerChunk = 24;
 constexpr std::size_t kMaxTrafficSegments = 64;
-// One replaceable, rider-centred minimap window.  The complete Jinan database
+// One replaceable, rider-centred minimap window.  The complete Dalian database
 // remains on the phone; these limits bound ESP32 RAM and LVGL object counts.
 constexpr std::size_t kMaxMapSceneRoads = 24;
 constexpr std::size_t kMaxMapSceneRoadPoints = 192;

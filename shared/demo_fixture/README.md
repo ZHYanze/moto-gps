@@ -1,10 +1,10 @@
 > **语言 / Language:** 中文 · [English](README.en.md)
 
-# 济南真实道路演示夹具
+# 真实道路演示夹具(济南路线作为离线导航 demo)
 
-> 本页主要描述固定演示夹具。当前 iPhone 已随包加载全济南 OSM SQLite 背景数据，
-> 正式导航在济南范围内可使用该离线场景，见 `../offline_map/README.md`。
-> 下文关于另建在线道路 Provider 的讨论不表示必须申请高德道路接口才能使用现有 OSM 层。
+> 本页主要描述固定演示夹具。当前 iPhone 已随包加载全大连 OSM SQLite 背景数据，
+> 见 `../offline_map/README.md`。下文提到的济南路线是导航 demo fixture(用于离线
+> fallback 测试),不是内置地图本身。
 
 这份夹具让 Web、iOS 离线回退和 ESP32 本机长按演示使用同一条真实道路：
 **山东省大数据产业基地 D 栋附近 → 浪潮集团（总部）附近**。白色线是所选
@@ -52,25 +52,25 @@ node scripts/generate_jinan_demo_fixture.mjs --check
 坐标再通过项目已测试的 WGS84 → GCJ-02 转换生成，与在线高德路线使用同一显示
 坐标系。
 
-`jinan_map_scene_sample.json` 是离线滚动窗口协议的独立样本：沿用上述 24 条
-真实道路，并从 OSM 矢量实体加入 D 栋起点附近 16 个真实建筑 footprint。它用于
+`dalian_map_scene_sample.json` 是离线滚动窗口协议的独立样本：沿用上述 24 条
+真实道路，并从 OSM 矢量实体加入中山广场附近 16 个真实建筑 footprint。它用于
 验证 MapScene 容量与建筑数据形状，当前演示固件不会自动加载：
 
 ```sh
-node scripts/update_jinan_map_scene_sample.mjs
+node scripts/update_dalian_map_scene_sample.mjs
 ```
 
 路线与背景道路数据：© OpenStreetMap contributors，ODbL。产品公开显示地图时仍须
 提供可读署名及 `https://www.openstreetmap.org/copyright` 许可入口；不能因离线存储
 而移除署名。
 
-## 济南离线地图与建筑
+## 大连离线地图与建筑
 
-完整济南离线图可行，但不应把未经裁剪的 OSM/高德瓦片直接塞进 ESP32。建议由
+完整大连离线图可行，但不应把未经裁剪的 OSM/高德瓦片直接塞进 ESP32。建议由
 iPhone 保存按区域下载的矢量分块，导航时只把当前位置周围约 500–800 m 的简化
 道路/建筑轮廓发给圆屏；ESP32 只维护一个滚动窗口。建筑必须来自合法数据源的真实
 footprint，不能用随机矩形冒充。容量估算、分块格式、Flash 边界和许可处理见
-[`JINAN_OFFLINE_MAP_MVP.md`](JINAN_OFFLINE_MAP_MVP.md)。
+[`../offline_map/README.md`](../offline_map/README.md)。
 
 ## 在线演示与数据边界
 

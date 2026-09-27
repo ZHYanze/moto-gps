@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-// Builds one auditable offline MapScene sample around the D-building start.
+// Builds one auditable offline MapScene sample around the Zhongshan Square area.
 // It fetches OSM vector entities (never rendered tiles), converts them through
 // the same WGS84 -> GCJ-02 implementation as navigation, and records source
-// way IDs.  This is a protocol/renderer fixture, not a complete Jinan pack.
+// way IDs.  This is a protocol/renderer fixture, not a complete Dalian pack.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -13,16 +13,12 @@ import { wgs84ToGcj02 } from "../backend/src/coordinates.js";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..");
-const routeFixturePath = path.join(
-  repositoryRoot,
-  "shared/demo_fixture/jinan_big_data_to_inspur.json",
-);
 const outputPath = path.join(
   repositoryRoot,
-  "shared/demo_fixture/jinan_map_scene_sample.json",
+  "shared/demo_fixture/dalian_map_scene_sample.json",
 );
-const bbox = [117.1200, 36.6725, 117.1250, 36.6770];
-const originWgs84 = [36.6748039, 117.1224488];
+const bbox = [121.6275, 38.9170, 121.6340, 38.9200];
+const originWgs84 = [38.918500, 121.630800];
 
 function invariant(condition, message) {
   if (!condition) throw new Error(message);
@@ -100,12 +96,37 @@ for (const { way, ring } of buildingCandidates) {
   });
 }
 
-const routeFixture = JSON.parse(fs.readFileSync(routeFixturePath, "utf8"));
-const roads = routeFixture.road_context.map((road) => ({
-  osm_way_id: road.osm_way_id,
-  class: classifyRoad(road.highway),
-  points_e6: road.points_wgs84.map(toGcjE6),
-}));
+// Roads and buildings both come from the same OSM bbox above; nothing is
+// reused from the demo-navigation route fixture.
+const roadCandidates = osm.elements
+  .filter((element) => element.type === "way" && element.tags?.highway)
+  .map((way) => {
+    const points = way.nodes.map((nodeId) => nodes.get(nodeId));
+    invariant(points.every(Boolean), `road way ${way.id} has missing nodes`);
+    return {
+      way,
+      points,
+      distance: squaredDistanceToOrigin(points),
+      pointCount: points.length,
+    };
+  })
+  .filter(({ pointCount }) => pointCount >= 2 && pointCount <= 32)
+  .sort((a, b) => a.distance - b.distance);
+
+const roads = [];
+let roadPointCount = 0;
+for (const { way, points, pointCount } of roadCandidates) {
+  if (roads.length >= 24) break;
+  if (roadPointCount + pointCount > 192) continue;
+  roadPointCount += pointCount;
+  roads.push({
+    osm_way_id: way.id,
+    class: classifyRoad(way.tags.highway),
+    ...(way.tags.name ? { name: way.tags.name } : {}),
+    points_e6: points.map(toGcjE6),
+  });
+}
+
 invariant(roads.length <= 24, "road count exceeds MapScene capacity");
 invariant(
   roads.reduce((sum, road) => sum + road.points_e6.length, 0) <= 192,

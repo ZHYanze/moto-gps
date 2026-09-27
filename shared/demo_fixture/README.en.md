@@ -4,9 +4,10 @@
 
 # Jinan real-road demo fixture
 
-> This page mainly describes the fixed demo fixture. The iPhone now loads the whole-Jinan OSM
-> SQLite background data with the app, and normal navigation inside Jinan can use that offline
-> scene, see `../offline_map/README.md`.
+> This page mainly describes the fixed demo fixture. The iPhone now loads the whole-Dalian OSM
+> SQLite background data with the app, and normal navigation can use that offline
+> scene, see `../offline_map/README.md`. The Jinan route mentioned below is a navigation demo
+> fixture used for offline fallback tests, not the bundled map itself.
 > The discussion below about building a separate online road Provider does not mean you have to
 > apply for an AMap road interface in order to use the existing OSM layer.
 
@@ -66,13 +67,13 @@ different roads stay separate. The maximum polyline error of the retained nodes 
 raw WGS84 coordinates are then converted through the project's tested WGS84 → GCJ-02 conversion,
 so the same display coordinate system as the online AMap route is used.
 
-`jinan_map_scene_sample.json` is a separate sample for the offline rolling-window protocol: it
-reuses the 24 real roads above and adds 16 real building footprints near the Building D start
-from OSM vector entities. It is used to validate the MapScene capacity and the shape of the
+`dalian_map_scene_sample.json` is a separate sample for the offline rolling-window protocol: it
+reuses the 24 real roads above and adds 16 real building footprints near Zhongshan Square from
+OSM vector entities. It is used to validate the MapScene capacity and the shape of the
 building data, and the current demo firmware does not load it automatically:
 
 ```sh
-node scripts/update_jinan_map_scene_sample.mjs
+node scripts/update_dalian_map_scene_sample.mjs
 ```
 
 Route and background road data: © OpenStreetMap contributors, ODbL. A product that publicly
@@ -80,15 +81,15 @@ displays the map must still provide readable attribution and a licence entry poi
 `https://www.openstreetmap.org/copyright`; offline storage is not a reason to remove the
 attribution.
 
-## Jinan offline map and buildings
+## Dalian offline map and buildings
 
-A complete Jinan offline map is feasible, but unclipped OSM/AMap tiles must not be pushed
+A complete Dalian offline map is feasible, but unclipped OSM/AMap tiles must not be pushed
 straight into the ESP32. The recommendation is for the iPhone to hold vector tiles downloaded
 per area and to send only simplified roads/building outlines within about 500–800 m of the
 current position to the round display during navigation; the ESP32 maintains only one rolling
 window. Buildings must be real footprints from a lawful data source and must not be passed off
 as random rectangles. For the capacity estimate, the tile format, the Flash bounds and licence
-handling see [`JINAN_OFFLINE_MAP_MVP.en.md`](JINAN_OFFLINE_MAP_MVP.en.md).
+handling see [`../offline_map/README.en.md`](../offline_map/README.en.md).
 
 ## Online demo and data boundary
 

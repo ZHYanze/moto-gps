@@ -216,7 +216,7 @@
     const canSearch = state.backendReady && state.runtimeReady && Boolean(state.currentPosition);
     elements.destinationQuery.disabled = !canSearch;
     if (canSearch && document.activeElement !== elements.destinationQuery && state.view === "setup") {
-      elements.destinationQuery.placeholder = "输入城市和地点，例如：济南奥体中心";
+      elements.destinationQuery.placeholder = "输入城市和地点，例如：大连星海广场";
     }
   }
 

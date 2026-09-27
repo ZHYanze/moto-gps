@@ -7,7 +7,7 @@ enum SQLiteOfflineMapError: Error, Equatable {
     case prepareFailed(Int32)
 }
 
-/// Read-only repository for a full-city `jinan-v1.sqlite` pack.
+/// Read-only repository for a full-city `dalian-v1.sqlite` pack.
 ///
 /// R-tree only narrows candidates. The shared in-memory selector performs the
 /// exact circular clip, visual-priority ordering and BLE capacity limits, so a

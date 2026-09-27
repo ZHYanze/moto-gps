@@ -24,7 +24,7 @@ not need to hold three long routes at the same time.
 
 `map-scene.v1.schema.json` is the local rolling-window contract between the offline map generator
 and the app: at most 24 roads / 192 road points and 16 buildings / 128 building points. It is not
-a server API, and it does not mean the whole-Jinan data has already been generated; the
+a server API, and it does not mean the whole-Dalian data has already been generated; the
 corresponding BLE binary message is `MapScene (0x14)`.
 
 ## Coordinate boundary

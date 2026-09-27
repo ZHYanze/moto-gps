@@ -178,7 +178,7 @@ sudo systemctl status moto-gps
 
 ```sh
 curl --fail-with-body --get 'https://nav.example.com/moto-gps/api/v1/places' \
-  --data-urlencode 'keywords=济南西站'
+  --data-urlencode 'keywords=大连站'
 ```
 
 应返回地点结果或有明确原因的服务错误；无权限、配额不足、超时均不能用 fixture 当作修复。
@@ -188,7 +188,7 @@ curl --fail-with-body --get 'https://nav.example.com/moto-gps/api/v1/places' \
 
 ```sh
 curl --fail-with-body --get 'https://nav.example.com/moto-gps/api/v1/map/cities' \
-  --data-urlencode 'keywords=历下区'
+  --data-urlencode 'keywords=中山区'
 curl --fail-with-body 'https://nav.example.com/moto-gps/api/v1/map/tiles/15/27044/12791' \
   --output /dev/null --write-out 'HTTP %{http_code}\n'
 ```
@@ -207,8 +207,8 @@ MOTOGPSGatewayBaseURL: https://nav.example.com/moto-gps/api/
 在 App 搜索附近终点，取得至少一条候选路线，再开始和结束一次导航。
 这样才能确认手机定位、公开网关、实际 Key、路线请求和 App 地址全部配合正常。
 
-首页“地图与离线下载”可搜索城市/区县，选好路线后也可下载沿途。下载需要 App 保持运行，
-中断后可继续。断网时使用下载与缓存，内置济南基础地图仍保留；这些只提供道路与建筑背景，
+首页"地图与离线下载"可搜索城市/区县，选好路线后也可下载沿途。下载需要 App 保持运行，
+中断后可继续。断网时使用下载与缓存，内置大连基础地图仍保留；这些只提供道路与建筑背景，
 不替代离线搜索、路线重算、实时路况、限速或读秒。
 
 后续更换 Key 只需要更新服务端环境并重启服务；更换 App 使用的域名/路径只需在“网关设置”中保存新地址。

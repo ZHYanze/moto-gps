@@ -20,7 +20,7 @@ iPhone 是路线与位置的权威端，圆屏不是另一个独立路线规划�
 BLE 服务与帧格式见 `shared/protocol/ble-navigation-v1.md`。
 触摸切页和音乐按键沿 BLE 反向传给 iPhone，后者调用 Apple Music 播放控制。
 
-济南 OSM SQLite 库只存放在 iPhone。手机查询车辆周围的道路、建筑，再将有限容量的
+大连 OSM SQLite 库只存放在 iPhone。手机查询车辆周围的道路、建筑，再将有限容量的
 窗口传给圆屏；它是背景场景数据，不提供离线搜索、全国算路或实时路况。
 显示前统一坐标系，不能把 WGS84 和 GCJ-02 的点直接混绘。
 

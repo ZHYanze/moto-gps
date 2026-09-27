@@ -89,7 +89,7 @@ use with smart hardware.
   may include neighbouring areas.
 - The App downloads city/district regions or roughly one kilometre around a selected route. Offline
   packages contain only roads and buildings, not offline search, routing, live traffic, speed limits
-  or countdowns. Bundled Jinan data remains a fallback.
+  or countdowns. Bundled Dalian data remains a fallback.
 - Completeness depends on local OSM coverage. The API does not truncate to the display's feature-count
   limit; the phone separately selects a BLE window. Oversized tiles return errors, not silently
   truncated success responses.

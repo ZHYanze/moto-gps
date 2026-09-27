@@ -87,11 +87,11 @@ prototyping has resumed or production acceptance has been completed.
 | Round-display navigation | White route line, next-manoeuvre icon and distance; live road speed limits and traffic-light countdown are not connected |
 | iPhone | Native navigation bars and grouped lists, light/dark appearance and large text, location-biased search, history, route preview and selection |
 | Navigation logic | Shared C++ core: route progress, off-route detection, online rerouting and periodic route / traffic refresh |
-| Grey roads / buildings | Surrounding OSM / Protomaps maps load online by default; city, district and route-corridor downloads, with the bundled Jinan map retained as a fallback |
+| Grey roads / buildings | Surrounding OSM / Protomaps maps load online by default; city, district and route-corridor downloads, with the bundled Dalian map retained as a fallback |
 | Speedometer / heading | Phone positioning provides speed and direction of travel; the on-board QMI8658 assists with relative turning |
 | Music | Apple Music previous track, play/pause, next track |
 | Animation / touch | Black-and-white logo fade in and out, connection-state transitions, swipe page changes, auto-hiding page dots, long-press PWR to power off |
-| Demo | Near Building D of the Jinan Big Data Industry Base → near Inspur headquarters; online requests and the OSM offline fallback are explicitly distinguished |
+| Demo | Near Building D of the Jinan Big Data Industry Base → near Inspur headquarters (navigation demo fixture); online requests and the OSM offline fallback are explicitly distinguished |
 
 ## Feature details
 
@@ -125,8 +125,8 @@ iPhone preview map.
 ### Place search and route selection
 
 The iPhone app uses AMap place search and the standard driving route service. Searches carry the
-phone's current position and prefer nearby, more relevant places. In Jinan you can start a search
-with a keyword such as "Olympic Sports Center", and you can also enter a place elsewhere together
+phone's current position and prefer nearby, more relevant places. In Dalian you can start a search
+with a keyword such as "Xinghai Square", and you can also enter a place elsewhere together
 with its city name.
 These are standard driving routes and do not guarantee avoidance of motorcycle-restricted roads.
 
@@ -179,7 +179,7 @@ Progress on verifying background connections and cross-city routes is collected 
 
 The background mini-map uses OpenStreetMap / Protomaps roads and buildings. With a working gateway
 configured, navigation loads surrounding maps online by default and saves visited areas; local data
-is reused when the network is unavailable. Maps are no longer limited to the bundled Jinan data,
+is reused when the network is unavailable. Maps are no longer limited to the bundled Dalian data,
 but download availability and local road/building coverage depend on the source and the network.
 
 Open "地图与离线下载" (Maps and Offline Downloads) on the iPhone home screen:
@@ -189,18 +189,18 @@ Open "地图与离线下载" (Maps and Offline Downloads) on the iPhone home scr
 - Downloads can be paused, resumed and removed; automatic cache is limited to 128 MB and manual downloads to 512 MB, with shared tiles stored once.
 - Offline background maps do not include live traffic; place search, new route planning and online rerouting still need a network connection.
 
-The original Jinan SQLite database remains bundled with the app as a local fallback within its coverage:
+The Dalian SQLite database is bundled with the app as a local fallback within its coverage:
 
 | Currently bundled data set | Count |
 | --- | ---: |
-| File size | 9.73 MiB |
-| Road polylines | 47,468 |
-| Road vertices | 266,985 |
-| Building outlines | 26,702 |
-| Building vertices | 148,140 |
+| File size | 9.57 MiB |
+| Road polylines | 33,714 |
+| Road vertices | 290,304 |
+| Building outlines | 34,343 |
+| Building vertices | 178,590 |
 
 During navigation the phone selects roads and buildings within roughly 500 metres of its position
-from online tiles, saved maps or the available Jinan fallback, then sends them to the display over
+from online tiles, saved maps or the available Dalian fallback, then sends them to the display over
 BLE. The query window moves with the position; the display does not store the complete city map.
 
 A single display window currently holds at most 24 background roads with 192 road points, and 16
@@ -273,7 +273,7 @@ as planning starts and the route arrives.
 ### Demo navigation
 
 The app offers a "demo navigation" entry point that uses the following public places as a fixed
-demo scenario:
+demo scenario (navigation demo fixture, unrelated to the bundled map):
 
 **Near Building D of the Jinan Big Data Industry Base → near Inspur Group headquarters.**
 

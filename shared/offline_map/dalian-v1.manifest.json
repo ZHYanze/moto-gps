@@ -1,0 +1,43 @@
+{
+  "input": "tmp/offline_map_source/dalian-roads-buildings.geojsonseq",
+  "output": "shared/offline_map/dalian-v1.sqlite",
+  "byteSize": 10031104,
+  "mebibytes": 9.57,
+  "sha256": "43801ec79a07504b4358353361b53fda06f3eb7d3c660d8c1b120742b7424889",
+  "source": {
+    "source_url": "https://download.geofabrik.de/asia/china/liaoning.html",
+    "source_timestamp": "2026-09-25T20:24:36Z",
+    "source_sha256": "27747b8581cabefec0ec8567df293664fd9e1421b18c2009b22fd21fb0560750",
+    "boundary_relation": "2764565"
+  },
+  "coverageGcj02E6": {
+    "min_lat_e6": 38674762,
+    "max_lat_e6": 40188950,
+    "min_lon_e6": 120989196,
+    "max_lon_e6": 123520734
+  },
+  "classCounts": {
+    "roads": {
+      "0": 4043,
+      "1": 1520,
+      "2": 1928,
+      "3": 8690,
+      "4": 5848,
+      "5": 11685
+    },
+    "buildings": {
+      "0": 34318,
+      "1": 22,
+      "2": 3
+    }
+  },
+  "inputFeatures": 102703,
+  "roads": 33714,
+  "roadPointsBefore": 395973,
+  "roadPointsAfter": 290304,
+  "buildings": 34343,
+  "buildingPointsBefore": 217589,
+  "buildingPointsAfter": 178590,
+  "excludedPrivateRoads": 68,
+  "invalidFeatures": 0
+}

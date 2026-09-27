@@ -1,4 +1,4 @@
-MOTO GPS Jinan Offline Map
+MOTO GPS Dalian Offline Map
 
 Map data © OpenStreetMap contributors
 https://www.openstreetmap.org/copyright
@@ -6,7 +6,7 @@ https://www.openstreetmap.org/copyright
 Open Database License (ODbL) 1.0
 https://opendatacommons.org/licenses/odbl/1-0/
 
-Source extract: Geofabrik Shandong
-https://download.geofabrik.de/asia/china/shandong.html
+Source extract: Geofabrik Liaoning
+https://download.geofabrik.de/asia/china/liaoning.html
 
 No online raster tiles are included in this package.

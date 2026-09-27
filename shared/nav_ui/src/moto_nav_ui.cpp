@@ -1550,7 +1550,7 @@ void create_navigation_page() {
 
     // Quiet, real street context sits behind the selected route. Each road is
     // its own LVGL line so disconnected streets are never joined by a fake
-    // diagonal. The bundled Jinan fixture uses all eight bounded slots; a
+    // diagonal. The bundled Dalian fixture uses all eight bounded slots; a
     // future online provider must simplify its response to the same limit.
     for(std::uint8_t i = 0; i < MOTO_UI_ROAD_POLYLINE_CAPACITY; ++i) {
         ui.nav_roads[i] = create_map_polyline(ui.nav_map, ui.nav_road_lines[i]);

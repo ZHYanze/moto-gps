@@ -13,10 +13,13 @@ const DEFAULT_INPUT = path.join(
   ROOT_DIR,
   "tmp/offline_map_source/jinan-roads-buildings.geojsonseq",
 );
-const DEFAULT_OUTPUT = path.join(ROOT_DIR, "shared/offline_map/jinan-v1.sqlite");
+const DEFAULT_OUTPUT = path.join(ROOT_DIR, "shared/offline_map/dalian-v1.sqlite");
 
 const inputPath = path.resolve(process.argv[2] ?? DEFAULT_INPUT);
 const outputPath = path.resolve(process.argv[3] ?? DEFAULT_OUTPUT);
+const DEFAULT_REFERENCE_LATITUDE = Number.parseFloat(process.env.MOTO_BUILD_REFERENCE_LATITUDE ?? "38.91");
+const REGION_LABEL = process.env.MOTO_BUILD_REGION ?? "大连市";
+const REGION_SLUG = process.env.MOTO_BUILD_SLUG ?? "dalian";
 const sourceMetadataPath = path.join(ROOT_DIR, "tmp/offline_map_source/source-metadata.json");
 const sourceMetadata = fs.existsSync(sourceMetadataPath)
   ? JSON.parse(fs.readFileSync(sourceMetadataPath, "utf8"))
@@ -46,7 +49,10 @@ const PI = Math.PI;
 const EARTH_AXIS_M = 6378245.0;
 const ECCENTRICITY_SQUARED = 0.006693421622965943;
 const LATITUDE_METRES_PER_DEGREE = 111_320;
-const JINAN_REFERENCE_LATITUDE_RAD = (36.67 / 180) * Math.PI;
+// Reference latitude for the longitude-metres approximation. Jinan is at ~36.67°,
+// use --reference-latitude to override when building another city (e.g. 38.91 for
+// Dalian).
+const JINAN_REFERENCE_LATITUDE_RAD = (DEFAULT_REFERENCE_LATITUDE / 180) * Math.PI;
 const LONGITUDE_METRES_PER_DEGREE =
   LATITUDE_METRES_PER_DEGREE * Math.cos(JINAN_REFERENCE_LATITUDE_RAD);
 
@@ -283,7 +289,7 @@ if (!fs.existsSync(inputPath)) {
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.rmSync(outputPath, { force: true });
 
-const schemaPath = path.join(ROOT_DIR, "shared/offline_map/jinan-v1.sql");
+const schemaPath = path.join(ROOT_DIR, "shared/offline_map/dalian-v1.sql");
 if (!fs.existsSync(schemaPath)) {
   throw new Error(`Schema does not exist: ${schemaPath}`);
 }
@@ -404,9 +410,9 @@ for await (let line of reader) {
 const metadata = new Map([
   ["schema_version", "1"],
   ["coordinate_system", "GCJ-02"],
-  ["region", "济南市"],
+  ["region", REGION_LABEL],
   ["region_osm_relation", String(sourceMetadata.boundary_relation)],
-  ["source", "OpenStreetMap / Geofabrik Shandong extract"],
+  ["source", "OpenStreetMap / Geofabrik extract"],
   ["source_url", String(sourceMetadata.source_url)],
   ["source_snapshot", String(sourceMetadata.source_timestamp)],
   ["source_sha256", String(sourceMetadata.source_sha256)],

@@ -2,40 +2,38 @@
 
 > English edition of the Chinese document. The Chinese file is authoritative if the two differ.
 
-# Jinan offline mini-map package v1
+# Dalian offline mini-map package v1
 
-`jinan-v1.sqlite` is the whole-Jinan offline scene database used by the MOTO GPS iPhone app. It
+`dalian-v1.sqlite` is the full Dalian offline scene database used by the MOTO GPS iPhone app. It
 is not a pre-drawn demo line and it does not cache AMap or OSM online tiles; it is queryable
 vector data generated from real OpenStreetMap geometry:
 
-- clipped exactly by the OSM Jinan municipal boundary relation `3486449`;
+- clipped exactly by the OSM Dalian municipal boundary relation `2764565`;
 - keeps roads usable by motor vehicles and excludes roads explicitly marked `access/private/no`;
 - keeps building outlines that actually exist in OSM and does not generate or draw in buildings;
 - WGS84 coordinates are converted uniformly to the GCJ-02 E6 used by the navigation chain;
 - roads and buildings each get a SQLite R-tree and the phone only queries 500–800 m around the
   vehicle;
-- the terminal still receives only the current window and does not need the 9.73 MiB whole-city
-  data inside the ESP32.
+- the terminal still receives only the current window and does not need the whole-city data
+  inside the ESP32.
 
-## 2026-09-03 measured data
+## 2026-09-27 measured data
 
 | Metric | Value |
 | --- | ---: |
-| SQLite file | 9.73 MiB / 10,199,040 bytes |
-| Road polylines | 47,468 |
-| Road points | 266,985 |
-| Building outlines | 26,702 |
-| Building points | 148,140 |
-| Candidate roads in the Building D–Inspur demo area | 291 |
-| Candidate buildings in the Building D–Inspur demo area | 283 |
-| SHA-256 | `d4ce2ebb0a9be68b060964e063858bc2b9a127d68b9796412feec6dc5b9fa2c3` |
+| SQLite file | 9.57 MiB / 10,037,248 bytes |
+| Road polylines | 33,714 |
+| Building outlines | 34,343 |
+| Candidate roads in the Zhongshan Square demo area | 303 |
+| Candidate buildings in the Zhongshan Square demo area | 751 |
+| SHA-256 | see `dalian-v1.manifest.json` |
 
-The hash is authoritative in `jinan-v1.manifest.json`; regenerating with unchanged input versions
+The hash in `dalian-v1.manifest.json` is authoritative; regeneration with unchanged input versions
 gives a deterministic result.
 
 ## File format
 
-The database schema is in `jinan-v1.sql`. The core conventions:
+The database schema is in `dalian-v1.sql`. The core conventions:
 
 - `metadata`: version, coordinate system, source, attribution, data date and statistics;
 - `roads` / `road_rtree`: road geometry and extent index;
@@ -52,7 +50,7 @@ Building class: `0 generic`, `1 landmark`, `2 parking`.
 
 ## Feasibility boundary
 
-This scheme lets any navigation position inside Jinan draw on the same high-density offline road
+This scheme lets any navigation position inside Dalian draw on the same high-density offline road
 database; but "having data" does not mean the screen draws all of it at once. The iPhone first
 filters several hundred candidate features by distance and road class, and BLE v1 sends at most
 24 roads, 192 road points, 16 buildings and 128 building points per window, matching the 466×466
@@ -70,7 +68,7 @@ must provide a discoverable `© OpenStreetMap contributors` attribution and a li
 Building an offline package by bulk-downloading `tile.openstreetmap.org` tiles is forbidden; this
 project uses the PBF data provided by Geofabrik.
 
-- Data source: https://download.geofabrik.de/asia/china/shandong.html
+- Data source: https://download.geofabrik.de/asia/china/liaoning.html
 - Attribution guidelines: https://osmfoundation.org/wiki/Licence/Attribution_Guidelines
 - ODbL: https://opendatacommons.org/licenses/odbl/1-0/
 
@@ -80,14 +78,28 @@ Dependencies: `osmium-tool`, `jq`, Node.js 22+ (needs the built-in `node:sqlite`
 
 ```bash
 mkdir -p tmp/offline_map_source
-curl -L https://download.geofabrik.de/asia/china/shandong-latest.osm.pbf \
-  -o tmp/offline_map_source/shandong-latest.osm.pbf
-./scripts/offline_map/extract_jinan.sh
-node scripts/offline_map/build_jinan_sqlite.mjs
+curl -L https://download.geofabrik.de/asia/china/liaoning-latest.osm.pbf \
+  -o tmp/offline_map_source/liaoning-latest.osm.pbf
+
+# extract_city.sh: Dalian relation=2764565, admin_level=5, division_code=210200
+bash scripts/offline_map/extract_city.sh \
+  dalian \
+  tmp/offline_map_source/liaoning-latest.osm.pbf \
+  2764565 \
+  5 \
+  210200 \
+  https://download.geofabrik.de/asia/china/liaoning-latest.osm.pbf
+
+node scripts/offline_map/build_jinan_sqlite.mjs \
+  tmp/offline_map_source/dalian-roads-buildings.geojsonseq \
+  shared/offline_map/dalian-v1.sqlite
+
 node scripts/offline_map/validate_jinan_sqlite.mjs
 ```
 
-The first step generates the boundary, the Jinan PBF and the GeoJSONSeq intermediate files; the
-second step generates the SQLite and the manifest; the third step decodes every geometry one by
-one and validates the boundary, the point counts, the R-tree, the version, the coordinate ranges
-and the Building D area density.
+The first step produces the boundary, the tags-filtered PBF cropped to Dalian and the GeoJSONSeq
+intermediate files; the second step generates the SQLite and the manifest; the third step decodes
+every geometry one by one and validates the boundary, the point counts, the R-tree, the version,
+the coordinate ranges and the Zhongshan Square density.
+`validate_jinan_sqlite.mjs` automatically scans every
+`shared/offline_map/*-v1.sqlite` and runs the per-city checks from its `KNOWN_BBOXES` table.

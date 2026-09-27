@@ -13,12 +13,12 @@ and this must not be interpreted as adding a noncommercial restriction to that m
 | Waveshare BSP / CO5300 initialisation | Component Registry `waveshare/esp32_s3_touch_amoled_1_75c` 3.0.0; board-level derived file `platforms/esp32/main/board_port_waveshare_1_75c.cpp` | Apache-2.0; see `LICENSES/Waveshare-Apache-2.0.txt`; that derived file keeps Apache-2.0 |
 | Source Han Sans SC font subset | `shared/nav_ui/assets/moto_font_nav_16.c`, generated from the fonts in the LVGL tools directory | SIL OFL 1.1; see `LICENSES/SourceHanSansSC-OFL.txt` |
 | Montserrat built-in font | LVGL's built-in font resources | SIL OFL 1.1; see `LICENSES/Montserrat-OFL.txt` |
-| OpenStreetMap data / derived database | `shared/offline_map/jinan-v1.sqlite` and its SQL/manifest; the route/road/building geometry in `shared/demo_fixture`; the map data in the generated C++ / Swift constants | ODbL 1.0, © OpenStreetMap contributors |
+| OpenStreetMap data / derived database | `shared/offline_map/dalian-v1.sqlite` and its SQL/manifest; the route/road/building geometry in `shared/demo_fixture`; the map data in the generated C++ / Swift constants | ODbL 1.0, © OpenStreetMap contributors |
 | Nodemailer | Mail service dependency in `website/server`, pinned in `package-lock.json`; [upstream](https://nodemailer.com/) | MIT-0; license included in the dependency package |
 
 OSM attribution and licence: <https://www.openstreetmap.org/copyright>.
 ODbL text: <https://opendatacommons.org/licenses/odbl/1-0/>.
-The complete derived Jinan database is provided with this repository; for the generation process see `shared/offline_map/README.md`.
+The complete derived Dalian database is provided with this repository; for the generation process see `shared/offline_map/README.md`.
 The licence of all map data layers stays ODbL, while the original logic of the generator code uses this project's licence.
 When displaying the map publicly or redistributing it, keep the attribution and links in `shared/offline_map/ATTRIBUTION.txt`.
 

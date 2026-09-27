@@ -28,7 +28,7 @@ these docs describe the current Chinese interface; they do not imply an English 
 - "Maps and offline downloads" supports city/district search and a download-area preview. The route
   page can download roughly one kilometre around the selected route; during navigation it uses the
   active route, including an accepted reroute.
-- Offline use falls back to downloaded packages, cache and the bundled Jinan base map. Packages only
+- Offline use falls back to downloaded packages, cache and the bundled Dalian base map. Packages only
   contain roads/buildings. Search, new routes, rerouting and live traffic still need a network;
   completeness depends on local OSM coverage.
 - Trustworthy road speed limits and traffic-light countdowns are not connected. Complete
@@ -94,7 +94,7 @@ Automatic cache is limited to 128 MiB and manual downloads to 512 MiB in total, 
 cities and routes. City downloads use administrative bounding rectangles and may include neighbouring
 areas; choose a district if a region is too large. Keep the App running during downloads. They can be
 paused, resumed after restart and deleted; continuous background downloading is not guaranteed.
-"Clear automatic cache" preserves manual packages, and the bundled Jinan base map stays with the App.
+"Clear automatic cache" preserves manual packages, and the bundled Dalian base map stays with the App.
 See the [user manual](../../docs/USER_MANUAL.en.md#10-online-surrounding-maps-and-offline-downloads).
 
 ## Privacy and pre-distribution checks
@@ -137,5 +137,5 @@ the music authorisation chain.
 ordinary offline CI does not run these on-site flows.
 New map tests cover tile planning, persistent downloads, cache, coordinate boundaries and map-to-BLE
 encoding. They do not replace continuous road riding, long screen-lock sessions, weak-network tests
-or complete cross-city downloads. The App retains the Jinan OSM base map and uses online OSM / Protomaps
+or complete cross-city downloads. The App retains the Dalian OSM base map and uses online OSM / Protomaps
 data. See the root third-party notices for attribution and complete licences.

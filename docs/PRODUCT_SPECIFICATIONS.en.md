@@ -33,7 +33,7 @@ Sources: [Waveshare firmware notes](../platforms/esp32/README.en.md), [A1 status
 | Route preview | Full-route MapKit preview, at most 3 AMap candidate routes, compared by time, distance and traffic conditions before being started manually |
 | Navigation | Shared C++ route progress, arrival detection, consecutive off-route confirmation, reroute, stale-response discard and traffic refresh |
 | Round-display map | White selected route, heading up; grey roads and buildings are provided by the local map window |
-| Offline base map | Jinan SQLite vector package: 47,468 roads, 26,702 buildings; the phone clips the nearby window and sends it |
+| Offline base map | Dalian SQLite vector package (`dalian-v1`): about 34k roads and about 34k buildings; the phone clips the nearby window and sends it |
 | Page interaction | Swipe left and right to switch between the navigation, speedometer, compass and optional music pages; the page dots hide after 5 seconds |
 | Music | Apple Music previous track, play/pause, next track and track state |
 | Communication | BLE v1; CRC, fragmentation and reassembly, heartbeat, session validation and a two-phase handshake |

@@ -203,7 +203,7 @@ In the terminal, with the domain replaced, test a real search:
 
 ```sh
 curl --fail-with-body --get 'https://nav.example.com/moto-gps/api/v1/places' \
-  --data-urlencode 'keywords=济南西站'
+  --data-urlencode 'keywords=大连站'
 ```
 
 It should return place results or a service error with a clear reason; a lack of permission, an
@@ -214,7 +214,7 @@ Next verify city bounds and a real surrounding tile:
 
 ```sh
 curl --fail-with-body --get 'https://nav.example.com/moto-gps/api/v1/map/cities' \
-  --data-urlencode 'keywords=历下区'
+  --data-urlencode 'keywords=中山区'
 curl --fail-with-body 'https://nav.example.com/moto-gps/api/v1/map/tiles/15/27044/12791' \
   --output /dev/null --write-out 'HTTP %{http_code}\n'
 ```
@@ -237,7 +237,7 @@ gateway, the actual key, the route request and the App's address all work togeth
 
 "Maps and offline downloads" on home supports city/district search; after choosing a route, its
 surroundings can also be downloaded. Keep the App running; interrupted downloads can resume. Offline
-use relies on downloads, cache and the retained bundled Jinan base map. These supply only road and
+use relies on downloads, cache and the retained bundled Dalian base map. These supply only road and
 building backgrounds, not offline search, rerouting, live traffic, speed limits or countdowns.
 
 Replacing the key later only requires updating the server-side environment and restarting the

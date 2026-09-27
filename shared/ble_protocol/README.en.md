@@ -14,10 +14,10 @@ For the protocol semantics, GATT permissions, ACK/timeout rules and the
 implementation should use the golden fixture as the byte-compatibility baseline and must not
 rely only on its own language's round-trip.
 
-The optional Jinan offline mini-map uses `MapScene (0x14)`: the phone clips and sends a fully
+The optional Dalian offline mini-map uses `MapScene (0x14)`: the phone clips and sends a fully
 replacing road/building rolling window, and the ESP32 neither stores nor queries the city-wide
 database. For the capacity, the generated sample and the boundary that is not yet wired up see
-[`../demo_fixture/JINAN_OFFLINE_MAP_MVP.en.md`](../demo_fixture/JINAN_OFFLINE_MAP_MVP.en.md).
+[`../offline_map/README.en.md`](../offline_map/README.en.md).
 
 Building the codec on its own:
 

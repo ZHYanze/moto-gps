@@ -22,7 +22,7 @@ The iPhone is the authoritative end for the route and the position; the round di
 For the BLE service and frame format see `shared/protocol/ble-navigation-v1.md`.
 Touch page changes and music buttons are passed back to the iPhone over BLE, and the iPhone calls Apple Music playback control.
 
-The Jinan OSM SQLite database is stored on the iPhone only. The phone queries the roads and buildings around the vehicle and then sends a
+The Dalian OSM SQLite database is stored on the iPhone only. The phone queries the roads and buildings around the vehicle and then sends a
 window of limited capacity to the round display; it is background scene data and does not provide offline search, nationwide route calculation or live traffic conditions.
 The coordinate system is unified before display; WGS84 and GCJ-02 points must not be drawn mixed directly.
 
