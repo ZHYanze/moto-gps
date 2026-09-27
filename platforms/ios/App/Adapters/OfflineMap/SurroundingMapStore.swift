@@ -529,28 +529,58 @@ final class SurroundingMapStore: ObservableObject {
                 self.activeDownloadID = id
                 let tiles = try await self.cache.tiles(for: id)
                 await self.reloadPacks()
-                // 分批并发下载：每批 8 个，比原来串行快 ~8 倍
-                let batchSize = 8
+                let total = tiles.count
+                // 串行下载每个 tile 在公网 + 后端串行 range 拉取场景下要几分钟。
+                // 改成并发下载:服务端 PMTiles range + 客户端 HTTP/2 多路复用
+                // 不会成瓶颈,服务端 WGS84→GCJ02 转换有 CPU 占用,并发数是合理上限。
+                let concurrency = min(8, total)
                 var completed = 0
-                for start in stride(from: 0, to: tiles.count, by: batchSize) {
-                    try Task.checkCancellation()
-                    let batch = Array(tiles[start..<min(start + batchSize, tiles.count)])
-                    try await withThrowingTaskGroup(of: Void.self) { group in
-                        for tile in batch {
-                            group.addTask { [cache = self.cache] in
+                var verifiedBytes: Int64 = 0
+                var firstError: Error?
+                await withTaskGroup(of: (MapTileID, Int64, Error?).self) { group in
+                    var iterator = tiles.makeIterator()
+                    // 启动第一批
+                    for _ in 0 ..< concurrency {
+                        guard let tile = iterator.next() else { break }
+                        group.addTask { [cache = self.cache] in
+                            do {
                                 _ = try await cache.fetch(tile, refresh: false)
+                                let bytes = await cache.byteCount(of: tile)
+                                return (tile, bytes, nil)
+                            } catch {
+                                return (tile, 0, error)
                             }
                         }
-                        for try await _ in group {}
                     }
-                    completed += batch.count
-                    await MainActor.run {
-                        self.downloadProgress = Double(completed) / Double(tiles.count)
-                        self.downloadMessage = "已下载 \(completed)/\(tiles.count)"
+                    // 回收完成的任务,补新任务
+                    for await (_, bytes, error) in group {
+                        completed += 1
+                        verifiedBytes += bytes
+                        if firstError == nil { firstError = error }
+                        if Task.isCancelled { break }
+                        if self.downloadGeneration != current { break }
+                        if let nextTile = iterator.next() {
+                            group.addTask { [cache = self.cache] in
+                                do {
+                                    _ = try await cache.fetch(nextTile, refresh: false)
+                                    let b = await cache.byteCount(of: nextTile)
+                                    return (nextTile, b, nil)
+                                } catch {
+                                    return (nextTile, 0, error)
+                                }
+                            }
+                        }
+                        self.downloadProgress = Double(completed) / Double(total)
+                        let size = ByteCountFormatter.string(fromByteCount: verifiedBytes, countStyle: .file)
+                        self.downloadMessage = "已下载 \(size) · \(Int(self.downloadProgress * 100))%"
                     }
                 }
-                self.downloadProgress = 1.0
-                self.downloadMessage = "下载完成，可离线使用"
+                guard self.downloadGeneration == current else { return }
+                if let firstError {
+                    self.downloadMessage = "下载已暂停：\(firstError.localizedDescription)；已完成部分已保留"
+                } else {
+                    self.downloadMessage = "下载完成，可离线使用"
+                }
             } catch is CancellationError {
                 if self.downloadGeneration == current { self.downloadMessage = "下载已暂停，可继续下载" }
             } catch {
