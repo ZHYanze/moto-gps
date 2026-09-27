@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: 检出源码（含子模块）
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: false
 
@@ -89,7 +89,7 @@ jobs:
           shasum -a 256 MotoGPS-unsigned.ipa
 
       - name: 上传 IPA 产物
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: MotoGPS-IPA
           path: MotoGPS-unsigned.ipa
