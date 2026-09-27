@@ -66,11 +66,13 @@ services:
     expose:
       - "80"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost/health || exit 1"]
+      # 强制 IPv4:busybox wget 默认 IPv6 优先,可能解析到 ::1 → nginx 只 listen v4 → 连不上
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      # 给 nginx 足够启动时间,alpine 默认 1-2 秒,保险多给点
+      start_period: 15s
     networks:
       - moto-gps-net
 

@@ -12,7 +12,7 @@ docker exec moto-gps-pmtiles ls -la /usr/share/nginx/html/
 echo "--- 期望看到 china.pmtiles 文件 ---"
 
 # 2. 容器内 wget 自检(应该 200)
-docker exec moto-gps-pmtiles wget -O /dev/null -S http://localhost/china.pmtiles 2>&1 | head -10
+docker exec moto-gps-pmtiles wget -O /dev/null -S http://127.0.0.1/health 2>&1 | head -10
 echo "--- 期望看到 HTTP 200 OK ---"
 
 # 3. 容器间 HTTP Range 测试(关键,后端用)
