@@ -1,0 +1,55 @@
+# MOTO GPS 后端：飞牛 NAS + Docker 直跑模式（无前置反代）
+#
+# 架构：飞牛 NAS 上的 Docker 容器监听 0.0.0.0:8787 → 宿主机回环 127.0.0.1:8787
+#       → 内网穿透客户端（cloudflared / frpc / npc / tailscaled 等）走公网绑定域名和证书。
+#
+# PMTiles 来源：腾讯云 COS(对象存储)
+#   - 文件托管在 COS bucket(如 https://moto-map-XXX.cos.ap-shanghai.myqcloud.com/china.pmtiles)
+#   - 推荐开启 CDN 加速(iPhone 走就近边缘节点,延迟几十 ms)
+#   - 防盗链设置 Referer 白名单 nav.imzyz.com 只让自己后端能拉
+#   - 优势:比 frp 反代 NAS 快 10-30 倍
+#
+# 第一次构建：docker compose up -d --build
+# 重启服务：  docker compose restart
+# 改 .env 后： docker compose up -d --force-recreate
+# 看日志：    docker compose logs -f --tail=100
+# 进入容器：  docker compose exec backend sh
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: moto-gps-backend:local
+    container_name: moto-gps-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    # 只绑定到宿主机回环，不暴露给局域网。
+    # 内网穿透客户端从宿主机 127.0.0.1:8787 拉流量即可。
+    # ⚠️ 若删掉 `127.0.0.1:` 让 LAN 直接访问，NAS 会裸奔在公网，**不要这么做**。
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      # 瓦片缓存目录，重建容器不丢数据。
+      - moto-tiles:/app/.cache
+    # 内存占用很小（Node 静态服务 + 缓存），单机足够；给个软上限防止异常膨胀。
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    environment:
+      # ==== PMTiles 来自腾讯云 COS ====
+      # .env 里的 MOTO_MAP_PMTILES_URL 会覆盖这里的值;
+      # .env.example 里提供格式参考。
+      # 示例:
+      #   MOTO_MAP_PMTILES_URL=https://moto-map-123456789.file.myqcloud.com/china.pmtiles
+      #   (CDN 加速域名,iPhone 走就近节点,延迟 20-50ms)
+      # 或:
+      #   MOTO_MAP_PMTILES_URL=https://moto-map-123.cos.ap-shanghai.myqcloud.com/china.pmtiles
+      #   (COS 源站域名,直连,延迟取决于地域)
+      # ==== 瓦片 JSON 缓存到 SSD ====
+      - MOTO_MAP_CACHE_DIR=/app/.cache/map-tiles
+
+volumes:
+  moto-tiles:
