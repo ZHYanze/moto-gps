@@ -660,22 +660,42 @@ struct ContentView: View {
     // MARK: - About developer sheet
 
     // 左上角"关于我"按钮。
-    // 图标用 `Assets.xcassets/AboutDeveloper.imageset/aboutDeveloper.png`(自画 SVG,
-    // 见 docs/MEMORY + 项目 `E:\项目空间\esp32\Zlogo.svg`)。
+    // 图标优先用 `Assets.xcassets/AboutDeveloper.imageset/`(自画 Z logo SVG,
+    // 见 `E:\项目空间\esp32\Zlogo.svg` + docs/MEMORY);
+    // 若 Asset Catalog 编译时该 image set 没被打包进 IPA(偶发),
+    // 兜底显示 SF Symbol `info.circle`,保证按钮至少可见。
+    // image name 用 `AboutDeveloper`(匹配 imageset 目录名,大小写不敏感但更规范)。
     // 保留 `accessibilityIdentifier` 不变,UI 测试不需要改 selector。
     private var aboutDeveloperToolbarButton: some View {
         Button {
             searchFocused = false
             showsAboutDeveloper = true
         } label: {
-            Image("aboutDeveloper")
-                .resizable()
-                .interpolation(.high)
-                .frame(width: 26, height: 26)
-                .accessibilityHidden(true)
+            aboutDeveloperIcon(size: 26)
         }
         .accessibilityLabel("关于我")
         .accessibilityIdentifier("about-developer-button")
+    }
+
+    /// 渲染"关于我"的 Z logo 头像。
+    /// - `AboutDeveloper` imageset 编译进 Assets.car 时显示自定义 Z logo。
+    /// - 编译产物缺失时兜底为 SF Symbol `info.circle`,避免 button 整片透明不可见。
+    /// - 探测逻辑用 `UIImage(named:)`(读 Asset Catalog 索引,iOS 大小写不敏感)。
+    @ViewBuilder
+    private func aboutDeveloperIcon(size: CGFloat) -> some View {
+        if UIImage(named: "AboutDeveloper") != nil {
+            Image("AboutDeveloper")
+                .resizable()
+                .interpolation(.high)
+                .frame(width: size, height: size)
+                .accessibilityHidden(true)
+        } else {
+            Image(systemName: "info.circle")
+                .resizable()
+                .foregroundStyle(.blue)
+                .frame(width: size, height: size)
+                .accessibilityHidden(true)
+        }
     }
 
     private var aboutDeveloper: some View {
@@ -686,11 +706,7 @@ struct ContentView: View {
                     VStack(spacing: 12) {
                         // 顶部头像:用 `Assets.xcassets/AboutDeveloper.imageset/` 同一套图。
                         // 详细参数同上方的 `aboutDeveloperToolbarButton`。
-                        Image("aboutDeveloper")
-                            .resizable()
-                            .interpolation(.high)
-                            .frame(width: 72, height: 72)
-                            .accessibilityHidden(true)
+                        aboutDeveloperIcon(size: 72)
                         Text("关于我")
                             .font(.title2.weight(.semibold))
                         Text("MOTO GPS · 个人修改版")
