@@ -48,7 +48,9 @@ jobs:
           cd platforms/ios
           /usr/bin/sed -i '' "s|org\.example\.motogps|${{ inputs.bundle_id }}|g" project.yml
           /usr/bin/sed -i '' "s|https://example\.invalid/moto-gps/api/|${{ inputs.gateway_base_url }}|g" project.yml
-          grep -n "PRODUCT_BUNDLE_IDENTIFIER\|MOTOGPSGatewayBaseURL" project.yml
+          # 同步改 Info.plist 里的 gateway 默认值,否则 App 永远读到 example.invalid
+          /usr/bin/sed -i '' "s|https://example\.invalid/moto-gps/api/|${{ inputs.gateway_base_url }}|g" App/Info.plist
+          grep -n "PRODUCT_BUNDLE_IDENTIFIER\|MOTOGPSGatewayBaseURL" project.yml App/Info.plist
 
       - name: 生成 Xcode 工程
         run: |
