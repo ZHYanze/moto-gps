@@ -709,7 +709,7 @@ struct ContentView: View {
                         aboutDeveloperIcon(size: 72)
                         Text("关于我")
                             .font(.title2.weight(.semibold))
-                        Text("MOTO GPS · 个人修改版")
+                        Text("MOTO GPS · 枕月酌专用版")
                             .font(.footnote)
                             .foregroundStyle(Color.secondary)
                     }
@@ -732,8 +732,8 @@ struct ContentView: View {
                     aboutSection(
                         title: "联系与主页",
                         rows: [
-                            .link(label: "GitHub 主页", display: "github.com/ZHYanze/moto-gps", url: "https://github.com/ZHYanze/moto-gps"),
-                            .link(label: "TG",            display: "t.me/ZHYanze",               url: "https://t.me/ZHYanze")
+                            .link(label: "🫂GitHub", display: "github.com/ZHYanze/moto-gps", url: "https://github.com/ZHYanze/moto-gps"),
+                            .link(label: "✈️TG",            display: "t.me/ZHYanze",               url: "https://t.me/ZHYanze")
                         ]
                     )
 
