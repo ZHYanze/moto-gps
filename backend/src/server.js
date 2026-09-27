@@ -69,6 +69,11 @@ async function main() {
   }
   const port = Number(process.env.PORT ?? 8787);
   const allowedOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5173";
+  // 监听地址:HOST 环境变量生效,Docker 直跑模式需 0.0.0.0 才能被宿主机端口映射命中;
+  // 默认 0.0.0.0(原本上游写死 127.0.0.1 会让 Docker 容器外请求 RST)。
+  const host = process.env.HOST && process.env.HOST.trim() !== ""
+    ? process.env.HOST.trim()
+    : "0.0.0.0";
   const mapProvider = createMapTileProvider({
     url: process.env.MOTO_MAP_PMTILES_URL ?? (providerMode === "amap" ? "auto" : "disabled"),
     cacheDirectory: process.env.MOTO_MAP_CACHE_DIR,
@@ -78,8 +83,8 @@ async function main() {
   await mapProvider?.initialize();
   const server = createGateway({ provider, mapProvider, allowedOrigin, providerMode });
 
-  server.listen(port, "127.0.0.1", () => {
-    console.log(`MOTO GPS gateway listening on http://127.0.0.1:${port} (${providerMode})`);
+  server.listen(port, host, () => {
+    console.log(`MOTO GPS gateway listening on http://${host}:${port} (${providerMode})`);
   });
 
   const close = () => { mapProvider?.close(); server.close(); };

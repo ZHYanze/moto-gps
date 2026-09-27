@@ -327,7 +327,7 @@ export function createGateway({
         warmCacheInBackground(mapProvider, tiles).then((stats) => {
           console.log(
             `[warm-cache] complete: ${stats.warmed}/${stats.total} tiles ` +
-            `(${stats.cacheHits} cache hits, ${stats.errors} errors) in ` +
+            `(${stats.errors} errors) in ` +
             `${((Date.now() - startedAt) / 1000).toFixed(1)}s`);
         }).catch((error) => {
           console.error(`[warm-cache] failed: ${error.message}`);

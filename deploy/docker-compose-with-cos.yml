@@ -18,13 +18,13 @@
 services:
   backend:
     build:
-      context: .
+      context: backend
       dockerfile: Dockerfile
     image: moto-gps-backend:local
     container_name: moto-gps-backend
     restart: unless-stopped
     env_file:
-      - .env
+      - backend/.env
     # 只绑定到宿主机回环，不暴露给局域网。
     # 内网穿透客户端从宿主机 127.0.0.1:8787 拉流量即可。
     # ⚠️ 若删掉 `127.0.0.1:` 让 LAN 直接访问，NAS 会裸奔在公网，**不要这么做**。
