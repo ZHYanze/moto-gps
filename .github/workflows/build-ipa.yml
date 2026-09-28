@@ -1,0 +1,124 @@
+name: Build Unsigned IPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      gateway_url:
+        description: "后端网关 HTTPS 地址（以 / 结尾）"
+        required: true
+        default: "https://nav.imzyz.com/moto-gps/api/"
+      bundle_id:
+        description: "App Bundle ID"
+        required: true
+        default: "com.imzyz.motogps"
+      version:
+        description: "版本号 Marketing Version"
+        required: true
+        default: "0.3.0"
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build-ipa:
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      GATEWAY_URL: ${{ inputs.gateway_url || 'https://nav.imzyz.com/moto-gps/api/' }}
+      BUNDLE_ID: ${{ inputs.bundle_id || 'com.imzyz.motogps' }}
+      VERSION: ${{ inputs.version || '0.3.0' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Patch project.yml
+        working-directory: platforms/ios
+        run: |
+          echo "Gateway: $GATEWAY_URL"
+          echo "BundleID: $BUNDLE_ID"
+          echo "Version: $VERSION"
+          python3 - <<PY
+          import re, pathlib, os
+          p = pathlib.Path("project.yml")
+          s = p.read_text(encoding="utf-8")
+          gw = os.environ["GATEWAY_URL"]
+          bid = os.environ["BUNDLE_ID"]
+          ver = os.environ["VERSION"]
+          s = re.sub(r'MOTOGPSGatewayBaseURL:\s*"?[^"\n]+"?',
+                     'MOTOGPSGatewayBaseURL: "' + gw + '"', s)
+          # 三个 target 的 bundle id 依次替换：主、uitests、unittests
+          counter = [0]
+          def replace_bid(m):
+              counter[0] += 1
+              if counter[0] == 1:
+                  return 'PRODUCT_BUNDLE_IDENTIFIER: ' + bid
+              else:
+                  return 'PRODUCT_BUNDLE_IDENTIFIER: ' + bid + ('.uitests' if counter[0] == 2 else '.unittests')
+          s = re.sub(r'PRODUCT_BUNDLE_IDENTIFIER:\s*\S+', replace_bid, s)
+          s = re.sub(r'MARKETING_VERSION:\s*\S+', 'MARKETING_VERSION: ' + ver, s)
+          p.write_text(s, encoding="utf-8")
+          PY
+          grep -nE "MOTOGPSGatewayBaseURL|PRODUCT_BUNDLE_IDENTIFIER|MARKETING_VERSION" project.yml
+
+      - name: Generate Xcode project
+        working-directory: platforms/ios
+        run: xcodegen generate
+
+      - name: Build archive (unsigned)
+        working-directory: platforms/ios
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project MotoGPS.xcodeproj \
+            -scheme MotoGPS \
+            -configuration Release \
+            -archivePath "$PWD/build/MotoGPS.xcarchive" \
+            -destination "generic/platform=iOS" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM=""
+
+      - name: Inspect archive
+        run: |
+          echo "=== archive structure ==="
+          find platforms/ios/build/MotoGPS.xcarchive -maxdepth 4 -type d || echo "archive not found"
+          echo "=== .app bundles ==="
+          find platforms/ios/build/MotoGPS.xcarchive -name "*.app" -maxdepth 5 || true
+
+      - name: Package IPA
+        run: |
+          set -e
+          APP_PATH=$(find platforms/ios/build/MotoGPS.xcarchive -name "*.app" -maxdepth 5 -type d | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "::error::No .app found in archive"
+            exit 1
+          fi
+          echo "App found: $APP_PATH"
+          STAGING_DIR=$(mktemp -d)
+          mkdir -p "$STAGING_DIR/Payload"
+          cp -R "$APP_PATH" "$STAGING_DIR/Payload/"
+          IPA_NAME="MotoGPS-unsigned-${VERSION}.ipa"
+          (cd "$STAGING_DIR" && zip -r -q "$GITHUB_WORKSPACE/$IPA_NAME" Payload)
+          ls -lh "$GITHUB_WORKSPACE/$IPA_NAME"
+          echo "IPA_NAME=$IPA_NAME" >> "$GITHUB_ENV"
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: MotoGPS-ipa
+          path: ${{ env.IPA_NAME }}
+          retention-days: 30
