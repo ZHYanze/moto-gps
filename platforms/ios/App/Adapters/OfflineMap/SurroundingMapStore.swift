@@ -649,13 +649,13 @@ final class SurroundingMapStore: ObservableObject {
     private static func httpLoader(baseURL: URL) -> MapTileCache.Loader {
         { tile in
             let url = baseURL.appendingPathComponent("v1/map/tiles/\(tile.z)/\(tile.x)/\(tile.y)")
-            // 允许 HTTPS 或 localhost；内网 HTTP 地址由 ATS 例外放行
-            guard url.scheme == "https" || ["localhost", "127.0.0.1"].contains(url.host ?? "") else {
-                // 内网 HTTP 测试地址（由 project.yml ATS 例外放行）
-                let allowedHTTPHosts: Set<String> = ["nas.imzyz.com", "192.168.31.101"]
-                guard url.scheme == "http", let host = url.host, allowedHTTPHosts.contains(host) else {
-                    throw SurroundingMapError.invalidResponse
-                }
+            // 允许 HTTPS、localhost、或配置的内网 HTTP 地址
+            let allowedHTTPHosts: Set<String> = ["nas.imzyz.com", "192.168.31.101"]
+            let isHTTPS = url.scheme == "https"
+            let isLocal = ["localhost", "127.0.0.1"].contains(url.host ?? "")
+            let isAllowedHTTP = url.scheme == "http" && allowedHTTPHosts.contains(url.host ?? "")
+            guard isHTTPS || isLocal || isAllowedHTTP else {
+                throw SurroundingMapError.invalidResponse
             }
             var request = URLRequest(url: url)
             request.timeoutInterval = 15
