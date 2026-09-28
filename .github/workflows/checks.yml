@@ -35,12 +35,21 @@ jobs:
         run: |
           node scripts/generate_jinan_demo_fixture.mjs --check
           node scripts/offline_map/validate_jinan_sqlite.mjs
-      - name: Website scripts and contact service (no email sent)
+
+  cloudflare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Workers build and runtime tests (local R2, no credentials)
         run: |
-          node --check website/site.js
-          node --check website/demos.js
-          npm ci --prefix website/server
-          npm --prefix website/server test
+          npm ci --prefix backend
+          npm ci --prefix backend/cloudflare
+          npm test --prefix backend/cloudflare
 
   swift-core:
     runs-on: macos-latest

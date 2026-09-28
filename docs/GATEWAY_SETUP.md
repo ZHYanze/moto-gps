@@ -12,6 +12,8 @@ iPhone → 你自己的 HTTPS 网关 → 高德 Web 服务（搜索、路线、�
               保存 Key       → Protomaps / OSM（道路、建筑；服务端缓存）
 ```
 
+如果不想维护服务器，可使用新增的 [Cloudflare Workers + R2 方案](../backend/cloudflare/README.md)。本页继续介绍 Node.js 自建服务器部署。
+
 ## 1. 准备 Key 和服务环境
 
 在[高德开放平台 Web 服务 Key 指南](https://lbs.amap.com/api/webservice/guide/create-project/get-key)中，

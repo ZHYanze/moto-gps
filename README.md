@@ -294,6 +294,8 @@ cd moto-gps-waveshare
 
 ### 2. 配置路线网关
 
+也可以选择新增的 [Cloudflare Workers + R2 部署](backend/cloudflare/README.md)，无需维护 Node 服务器。下面仍是原有服务器方案。
+
 网关将 App 的搜索和路线请求转换为高德 Web 服务请求，再返回统一格式的导航数据。
 高德 Key 保存在服务端环境变量中。
 

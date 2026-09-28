@@ -28,3 +28,6 @@ backups/
 *.bin
 *.elf
 *.map
+
+# Local Cloudflare emulator state (also when tests run from the repository root)
+.wrangler/

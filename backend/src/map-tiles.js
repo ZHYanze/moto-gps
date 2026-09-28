@@ -206,12 +206,13 @@ export function selectLatestBuild(manifest) {
 
 export function createMapTileProvider({ url = "auto", cacheDirectory = resolve(".cache/map-tiles"),
   maximumCacheBytes = 1024 ** 3, fetchImpl = globalThis.fetch, timeoutMs = 10_000,
-  now = () => Date.now(), archiveFactory } = {}) {
+  now = () => Date.now(), archiveFactory, storage, scheduleRefresh = true,
+  backgroundTask = (task) => { void task; } } = {}) {
   if (url === "disabled") return null;
   const automatic = url === "auto";
   if (!automatic) validatedSourceUrl(url);
   const namespace = createHash("sha256").update(automatic ? "protomaps-auto" : url).digest("hex").slice(0, 16);
-  const cache = new MapDiskCache(cacheDirectory, maximumCacheBytes);
+  const cache = storage?.cache ?? new MapDiskCache(cacheDirectory, maximumCacheBytes);
   const statePath = join(cacheDirectory, `source-${namespace}.json`);
   const withRangeSlot = createSemaphore(4);
   const withTileSlot = createSemaphore(4);
@@ -232,8 +233,16 @@ export function createMapTileProvider({ url = "auto", cacheDirectory = resolve("
     await cache.ready;
     if (automatic) {
       try {
-        const stored = JSON.parse(await readFile(statePath, "utf8"));
-        if (/^https:\/\/build\.protomaps\.com\/\d{8}\.pmtiles$/.test(stored.url)) useSource(stored);
+        const stored = storage ? await storage.readSource(namespace)
+          : JSON.parse(await readFile(statePath, "utf8"));
+        if (/^https:\/\/build\.protomaps\.com\/\d{8}\.pmtiles$/.test(stored.url)) {
+          useSource(stored);
+          // Worker requests have separate providers; reuse persisted refresh time.
+          if (storage && Number.isFinite(stored.refreshed_at_ms) && stored.refreshed_at_ms <= now()) {
+            lastMetadataAttempt = stored.refreshed_at_ms;
+            lastMetadataSuccess = new Date(stored.refreshed_at_ms).toISOString();
+          }
+        }
       } catch { /* Offline cache remains usable even without source metadata. */ }
     } else {
       useSource({ url, revision: new URL(url).pathname.split("/").at(-1), schema_version: null });
@@ -258,9 +267,13 @@ export function createMapTileProvider({ url = "auto", cacheDirectory = resolve("
         useSource(candidate);
         lastMetadataSuccess = new Date(now()).toISOString();
         metadataFailed = false;
-        const temporary = `${statePath}.tmp`;
-        await writeFile(temporary, JSON.stringify(candidate), { mode: 0o600 });
-        await rename(temporary, statePath);
+        if (storage) {
+          await storage.writeSource(namespace, { ...candidate, refreshed_at_ms: now() });
+        } else {
+          const temporary = `${statePath}.tmp`;
+          await writeFile(temporary, JSON.stringify(candidate), { mode: 0o600 });
+          await rename(temporary, statePath);
+        }
       } catch {
         metadataFailed = true;
         lastError = "MAP_METADATA_UNAVAILABLE";
@@ -305,7 +318,7 @@ export function createMapTileProvider({ url = "auto", cacheDirectory = resolve("
     return pending;
   }
 
-  const timer = automatic ? setInterval(() => { refreshSource().catch(() => {}); }, DAY_MS) : null;
+  const timer = automatic && scheduleRefresh ? setInterval(() => { refreshSource().catch(() => {}); }, DAY_MS) : null;
   timer?.unref();
   return {
     async initialize() { await ready; await refreshSource().catch(() => {}); },
@@ -316,10 +329,10 @@ export function createMapTileProvider({ url = "auto", cacheDirectory = resolve("
       const cached = await cache.get(name, { z, x, y });
       if (cached) {
         // Serve stored data immediately, including during source/manifest outages.
-        if (!closed) refreshSource().then(() => {
+        if (!closed) backgroundTask(refreshSource().then(() => {
           if (source && (source.revision !== cached.source.source_revision ||
               now() - Date.parse(cached.source.retrieved_at) > 7 * DAY_MS)) return load(z, x, y, name);
-        }).catch(() => {});
+        }).catch(() => {}));
         return cached;
       }
       return load(z, x, y, name);

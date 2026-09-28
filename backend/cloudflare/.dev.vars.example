@@ -1,0 +1,6 @@
+# Copy to .dev.vars for LOCAL testing. Never commit a real key.
+# fixture returns a synthetic route and does not contact AMap.
+MOTO_PROVIDER=fixture
+MOTO_MAP_PMTILES_URL=disabled
+# For live LOCAL testing, use MOTO_PROVIDER=amap and add your own key:
+# AMAP_WEB_SERVICE_KEY=

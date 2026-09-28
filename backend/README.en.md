@@ -8,6 +8,8 @@ Node.js 20+ is required; Node.js 24+ is recommended for the `--env-file` example
 Keep the AMap key on the server, never in the iOS app, website or firmware. Map decoding depends on
 pinned versions of `pmtiles`, `@mapbox/vector-tile` and `pbf`; install dependencies before deployment.
 
+An optional [Cloudflare Workers + R2 deployment](cloudflare/README.en.md) uses the same API and protocol. The Node.js server option below remains supported.
+
 ## Run local tests first
 
 ```sh

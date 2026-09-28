@@ -16,6 +16,8 @@ iPhone → your own HTTPS gateway → AMap Web Service (search, routes, city bou
               stores the key   → Protomaps / OSM (roads, buildings; server cache)
 ```
 
+For an alternative without maintaining a server, use the new [Cloudflare Workers + R2 option](../backend/cloudflare/README.en.md). This page continues to describe the original Node.js server deployment.
+
 ## 1. Prepare the key and the service environment
 
 In the [AMap Open Platform Web Service key guide](https://lbs.amap.com/api/webservice/guide/create-project/get-key),

@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "moto-gps-gateway",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "vars": {
+    "MOTO_PROVIDER": "disabled",
+    "MOTO_MAP_PMTILES_URL": "auto",
+    "WEB_ORIGIN": "http://127.0.0.1:4173",
+    "MOTO_BASE_PATH": ""
+  },
+  "r2_buckets": [
+    { "binding": "MAP_CACHE", "bucket_name": "moto-gps-map-cache" }
+  ],
+  "ratelimits": [
+    { "name": "ROUTE_LIMITER", "namespace_id": "1001", "simple": { "limit": 30, "period": 60 } },
+    { "name": "PLACE_LIMITER", "namespace_id": "1002", "simple": { "limit": 60, "period": 60 } },
+    { "name": "CITY_LIMITER", "namespace_id": "1003", "simple": { "limit": 30, "period": 60 } },
+    { "name": "TILE_LIMITER", "namespace_id": "1004", "simple": { "limit": 600, "period": 60 } }
+  ],
+  "triggers": { "crons": ["17 3 * * *"] }
+}

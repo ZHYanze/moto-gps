@@ -6,6 +6,8 @@ Node.js 20+；以下启动示例建议 Node.js 24+，支持 `--env-file`。
 高德 Key 只放在服务端，不能写到 iOS App、网页或固件。地图解码依赖锁定版本的
 `pmtiles`、`@mapbox/vector-tile` 和 `pbf`，部署前必须安装依赖。
 
+另有 [Cloudflare Workers + R2 部署](cloudflare/README.md)可选，共用接口与协议，保留下面的 Node.js 服务器方案。
+
 ## 先跑本地测试
 
 ```sh

@@ -365,6 +365,8 @@ The commands below all start from the repository root.
 
 ### 2. Configure the route gateway
 
+You can also use the new [Cloudflare Workers + R2 deployment](backend/cloudflare/README.en.md) without maintaining a Node server. The original server option follows below.
+
 The gateway turns the app's search and route requests into AMap Web Service requests and returns
 navigation data in a unified format.
 The AMap key is held in a server-side environment variable.
