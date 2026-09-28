@@ -4,6 +4,8 @@
 
 # iPhone companion app
 
+For installation without compiling, see the [IPA guide](../../docs/IOS_SIDELOAD.en.md). Since 0.3.1, the app can save and immediately use a custom HTTPS gateway through 网关设置 (Gateway settings), retaining it across launches.
+
 For step-by-step graphical instructions for a first installation see the [DIY guide: installing on the iPhone](../../docs/WAVESHARE_DIY_GUIDE.en.md#4-install-the-app-on-the-iphone).
 For everyday features see the [user manual](../../docs/USER_MANUAL.en.md), and for a self-hosted service see the
 [gateway guide](../../docs/GATEWAY_SETUP.en.md).

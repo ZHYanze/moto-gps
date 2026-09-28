@@ -10,9 +10,9 @@ operation after installation see the [features and user manual](USER_MANUAL.en.m
 
 ## Understand the installation requirements first
 
-The repository currently provides source code. As of the last update of this guide, GitHub Releases
-has no prebuilt firmware, and the repository provides no App Store listing, TestFlight invitation or
-signed IPA that can be installed directly. The actual path this document uses is:
+The repository provides source code and an [IPA preview for user-side re-signing](IOS_SIDELOAD.en.md).
+Prebuilt ESP32 firmware, App Store and TestFlight distribution are not provided.
+The full Mac source-build flow remains below:
 
 ```text
 buy a 1.75C production device → build the firmware on the Mac → back up over USB and flash
@@ -20,10 +20,10 @@ buy a 1.75C production device → build the firmware on the Mac → back up over
                  → configure your own HTTPS route gateway → search for a destination and navigate
 ```
 
-Reproducing the demo needs the device, a Mac, an iPhone and an Apple account; real place search and
-routing also need your own AMap Web Service key and an HTTPS gateway the phone can reach. With only
-a Windows computer you can still build and flash the ESP32, but this document's iPhone installation
-path still needs a Mac / Xcode. Downloading the GitHub ZIP to an iPhone cannot install the App.
+The source installation below needs the device, a Mac, an iPhone and an Apple account. Windows users
+can build/flash the ESP32 and use [SideStore with the IPA](IOS_SIDELOAD.en.md) for the phone, without
+a Mac to compile the app. Real searches and routes still require your own AMap Web Service key and
+a reachable HTTPS gateway. The source ZIP is not an app installer.
 
 [What to buy](#1-what-to-buy) · [Prepare the tools](#2-prepare-the-mac-tools-and-the-source) · [Backup and flashing](#3-build-back-up-and-flash-the-firmware) ·
 [iPhone installation](#4-install-the-app-on-the-iphone) · [First connection](#5-first-pairing-and-the-desktop-demo) ·
@@ -325,9 +325,9 @@ Once configured, open your own `https://nav.example.com/moto-gps/api/healthz` in
 - then verify a real place search as the gateway guide describes; the health check itself does not
   verify the key's permissions and quota.
 
-Change `MOTOGPSGatewayBaseURL` in `project.yml` to the address above with `healthz` removed, run
-XcodeGen again, then Run onto the iPhone. The AMap key goes only into the backend environment
-variables; it must not be put into the App. `127.0.0.1` on the phone means the phone itself, not the
+In the app’s gateway settings, save the address above with `healthz` removed. Source builds may
+also set a default through `MOTOGPSGatewayBaseURL` in `project.yml`. The AMap key goes only into the
+backend environment variables; it must not be put into the App. `127.0.0.1` on the phone means the phone itself, not the
 Mac; do not put the computer's local listening address straight into the App.
 
 Afterwards, get a position fix in an open, stationary place, search for a nearby place, tap

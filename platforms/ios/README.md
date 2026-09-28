@@ -2,6 +2,8 @@
 
 # iPhone 伴侣 App
 
+无需自行编译的用户可使用[IPA 安装方式](../../docs/IOS_SIDELOAD.md)。0.3.1 起可在 App 的“网关设置”中保存自己的 HTTPS 地址，即时生效并在重启后保留。
+
 面向首次安装的逐步图形界面操作见[DIY 教程：安装到 iPhone](../../docs/WAVESHARE_DIY_GUIDE.md#4-把-app-安装到-iphone)。
 日常功能见[使用说明书](../../docs/USER_MANUAL.md)，自建服务见[网关教程](../../docs/GATEWAY_SETUP.md)。
 

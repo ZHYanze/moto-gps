@@ -7,8 +7,8 @@
 
 ## 先了解安装条件
 
-当前仓库提供源码。截至本教程更新时，GitHub Releases 没有预编译固件，仓库也未提供
-App Store、TestFlight 邀请或可直接安装的签名 IPA。本文使用的实际路径是：
+仓库提供源码和[可自行重签的 IPA 测试版](IOS_SIDELOAD.md)，暂无预编译 ESP32 固件、App Store 或 TestFlight 分发。
+下面保留完整的 Mac 源码构建流程：
 
 ```text
 买 1.75C 成品设备 → 在 Mac 编译固件 → USB 备份并烧录
@@ -16,9 +16,9 @@ App Store、TestFlight 邀请或可直接安装的签名 IPA。本文使用的�
                  → 配置自己的 HTTPS 路线网关 → 搜索目的地并导航
 ```
 
-复现演示需要设备、Mac、iPhone 和 Apple 账号；真实地点搜索与路线还需要自己的高德 Web 服务 Key
-及手机能访问的 HTTPS 网关。只有 Windows 电脑时可以编译和烧录 ESP32，但本文的 iPhone
-安装路径仍需要 Mac/Xcode。下载 GitHub ZIP 到 iPhone 不能安装 App。
+下面的源码安装流程需要设备、Mac、iPhone 和 Apple 账号。只有 Windows 电脑时，可以编译和烧录 ESP32，
+手机端则按 [IPA 安装说明](IOS_SIDELOAD.md)用 SideStore 自行签名安装，无需 Mac 编译。
+真实地点搜索与路线还需要自己的高德 Web 服务 Key 和手机能访问的 HTTPS 网关。源码 ZIP 不是 App 安装包。
 
 [购买清单](#1-购买清单) · [准备工具](#2-准备-mac-工具和源码) · [备份烧录](#3-编译备份并烧录固件) ·
 [iPhone 安装](#4-把-app-安装到-iphone) · [首次连接](#5-首次配对与桌面演示) ·
@@ -272,8 +272,8 @@ open platforms/ios/MotoGPS.xcodeproj
 - `ready_for_live_navigation` 应为 `true`；
 - 再按网关教程验证真实地点搜索；健康检查本身不验证 Key 权限和配额。
 
-把 `project.yml` 的 `MOTOGPSGatewayBaseURL` 改为上述地址去掉 `healthz` 的部分，
-重新执行 XcodeGen，再 Run 到 iPhone。高德 Key 只填在后端环境变量里，不能填进 App。
+在 App 的“网关设置”中填写上述地址去掉 `healthz` 的部分并保存。源码构建也可通过
+`project.yml` 的 `MOTOGPSGatewayBaseURL` 设置默认值。高德 Key 只填在后端环境变量里，不能填进 App。
 手机上的 `127.0.0.1` 指手机自己，不是 Mac；不要把电脑的本地监听地址直接填到 App。
 
 完成后在开阔静止环境取得定位，搜索附近地点，点“选为终点”，查看“路线全览”，

@@ -14,6 +14,10 @@ downloads", "Demo navigation" and "Privacy and data" on the "Set off" home page.
 is on hold while work focuses on the Waveshare edition. English UI labels in this manual describe the
 current Chinese interface; they do not imply that the App has an English localisation.
 
+## Gateway settings
+
+Since 0.3.1, use the gear icon at the top left of the departure screen to open 网关设置. Enter your HTTPS base URL, use 测试连接 to check service status, then save. Changes apply immediately and persist across launches. Switching clears searches and pauses downloads while retaining downloaded maps; it is blocked during navigation. Without a Mac, follow the [IPA installation guide](IOS_SIDELOAD.en.md).
+
 ## 1. What the phone and the round display each do
 
 The iPhone handles position, search, route preview and navigation computation; the round display

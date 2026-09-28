@@ -4,6 +4,8 @@
 
 # Waveshare live navigation and surrounding maps: gateway configuration
 
+With a prebuilt IPA, enter this deployment’s HTTPS base URL in 网关设置 (Gateway settings) and save; no source edits or rebuild are required. See the [IPA guide](IOS_SIDELOAD.en.md). The `project.yml` setting below remains a build-time default; the address saved in the app takes precedence.
+
 This page is the companion step to the [DIY guide](WAVESHARE_DIY_GUIDE.en.md). If you only want the
 App demo you can configure this later; searching for real destinations, candidate routes, off-route
 rerouting, traffic, online surrounding maps and offline-map downloads need the service on this page.
@@ -239,7 +241,6 @@ use relies on downloads, cache and the retained bundled Jinan base map. These su
 building backgrounds, not offline search, rerouting, live traffic, speed limits or countdowns.
 
 Replacing the key later only requires updating the server-side environment and restarting the
-service; changing the domain / path the App uses requires updating the project configuration and
-reinstalling. For the API fields and the request constraints see the
+service; changing the domain / path only requires saving the new address in the app’s gateway settings. For the API fields and the request constraints see the
 [backend README](../backend/README.en.md); for day-to-day operation see the
 [features manual](USER_MANUAL.en.md).

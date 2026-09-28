@@ -409,6 +409,8 @@ The complete API and deployment details are in the
 
 ### 3. Build and install the iPhone app
 
+You can also download an IPA and enter the gateway address inside the app without compiling on a Mac: [IPA installation guide](docs/IOS_SIDELOAD.en.md).
+
 Edit `platforms/ios/project.yml` and set:
 
 - `MOTOGPSGatewayBaseURL`: your own HTTPS gateway address, for example `https://YOUR-DOMAIN/moto-gps/api/`.

@@ -100,8 +100,9 @@ Use the returned `https://moto-gps-gateway.<your-subdomain>.workers.dev/` URL, o
 [Cloudflare's custom-domain setup](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/).
 A custom domain alone does not guarantee mainland China connectivity.
 
-Set `MOTOGPSGatewayBaseURL` in `platforms/ios/project.yml` to the deployed HTTPS base URL,
-regenerate the Xcode project and rebuild the app. With the default path:
+Enter the deployed HTTPS base URL in the app’s 网关设置 (Gateway settings) and save to apply it immediately.
+Source builds can still use `MOTOGPSGatewayBaseURL` in `platforms/ios/project.yml` as the default.
+Without a Mac, use the [IPA installation guide](../../docs/IOS_SIDELOAD.en.md). With the default path:
 
 ```text
 https://moto-gps-gateway.YOUR-SUBDOMAIN.workers.dev/
@@ -114,7 +115,7 @@ https://nav.example.com/moto-gps/api/
 ```
 
 Use the same prefix in verification requests below. No ESP32 firmware change is needed.
-The original server remains available; to switch back, restore its URL in the app and rebuild.
+The original server remains available; to switch back, save its URL in the app’s gateway settings.
 
 ## 4. Verify your deployment
 

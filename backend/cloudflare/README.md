@@ -92,8 +92,9 @@ npm run deploy
 也可按 [Cloudflare 自定义域名文档](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/)
 绑定自己的域名；自定义域名不会自动提供中国大陆网络质量保证。
 
-在 iOS 的 `platforms/ios/project.yml` 中把 `MOTOGPSGatewayBaseURL` 改为部署后的 HTTPS 根地址，
-重新生成工程并编译。默认路径示例：
+在 App 的“网关设置”中填写部署后的 HTTPS 根地址并保存，即时生效。
+也可以在源码构建时通过 `platforms/ios/project.yml` 的 `MOTOGPSGatewayBaseURL` 设置默认值。
+没有 Mac 可使用 [IPA 安装方式](../../docs/IOS_SIDELOAD.md)。默认路径示例：
 
 ```text
 https://moto-gps-gateway.YOUR-SUBDOMAIN.workers.dev/
@@ -106,7 +107,7 @@ https://nav.example.com/moto-gps/api/
 ```
 
 同一个前缀要同时用于下面的验收请求。ESP32 固件不需要修改。
-原服务器地址继续可用；回退时把 App 网关地址改回原地址并重新编译。
+原服务器地址继续可用；回退时在 App 的“网关设置”中保存原地址。
 
 ## 4. 实际验收
 

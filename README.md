@@ -335,6 +335,8 @@ node --env-file=backend/.env backend/src/server.js
 
 ### 3. 构建并安装 iPhone App
 
+也可以直接下载 IPA，在 App 中填写网关地址，无需自己用 Mac 编译：[IPA 安装说明](docs/IOS_SIDELOAD.md)。
+
 编辑 `platforms/ios/project.yml`，设置：
 
 - `MOTOGPSGatewayBaseURL`：自己的 HTTPS 网关地址，例如 `https://YOUR-DOMAIN/moto-gps/api/`。
