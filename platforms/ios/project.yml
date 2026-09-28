@@ -58,6 +58,14 @@ targets:
         UIBackgroundModes:
           - location
           - bluetooth-central
+        # 允许内网 HTTP 测试（生产环境用 HTTPS）
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+          NSExceptionDomains:
+            nas.imzyz.com:
+              NSExceptionAllowsInsecureHTTPLoads: true
+            192.168.31.101:
+              NSExceptionAllowsInsecureHTTPLoads: true
         MOTOGPSGatewayBaseURL: https://example.invalid/moto-gps/api/
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -67,7 +75,7 @@ targets:
       path: App/MotoGPS.entitlements
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: org.example.motogps
+        PRODUCT_BUNDLE_IDENTIFIER: com.imzyz.motogps
         PRODUCT_NAME: MOTO GPS
         MARKETING_VERSION: 0.3.1
         CURRENT_PROJECT_VERSION: 6
@@ -97,7 +105,7 @@ targets:
       - target: MotoGPS
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: org.example.motogps.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: com.imzyz.motogps.uitests
         SWIFT_VERSION: 5.0
         TEST_TARGET_NAME: MotoGPS
         GENERATE_INFOPLIST_FILE: YES
@@ -113,7 +121,7 @@ targets:
       - target: MotoGPS
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: org.example.motogps.unittests
+        PRODUCT_BUNDLE_IDENTIFIER: com.imzyz.motogps.unittests
         SWIFT_VERSION: 5.0
         GENERATE_INFOPLIST_FILE: YES
         TEST_HOST: $(BUILT_PRODUCTS_DIR)/MOTO GPS.app/MOTO GPS
