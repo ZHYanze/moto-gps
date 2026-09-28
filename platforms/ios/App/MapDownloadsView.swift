@@ -155,7 +155,7 @@ struct MapDownloadsView: View {
                                 .disabled(store.isDownloading)
                         }
                     }
-                    Label("济南基础地图 · 随 App 提供", systemImage: "internaldrive")
+                    Label("大连基础地图 · 随 App 提供", systemImage: "internaldrive")
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
                 Section {
@@ -217,7 +217,7 @@ private struct MapCitySearchView: View {
                 ContentUnavailableView(
                     search.query.count >= 2 ? "未找到城市" : "添加常用城市",
                     systemImage: "building.2",
-                    description: Text("输入城市或区县名称，例如“济南”“上海”“历下区”。")
+                    description: Text("输入城市或区县名称，例如“大连”“上海”“庄河市”。")
                 )
             } else {
                 ForEach(search.cities) { city in

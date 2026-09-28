@@ -190,8 +190,8 @@ final class AppModel: ObservableObject {
         if let navigationFailure { return navigationFailure }
         if isDemoActive, navigation.stateName == "navigating" {
             return deviceReady
-                ? "真实济南路网正在同步 · 道路 © OpenStreetMap contributors"
-                : "真实济南路网运行中 · 道路 © OpenStreetMap contributors"
+                ? "真实大连路网正在同步 · 道路 © OpenStreetMap contributors"
+                : "真实大连路网运行中 · 道路 © OpenStreetMap contributors"
         }
         switch navigation.stateName {
         case "acquiring": return "请保持精确定位开启"
