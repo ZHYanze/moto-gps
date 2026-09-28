@@ -54,11 +54,13 @@ struct RouteOverviewMap: UIViewRepresentable {
         }
         var allCoordinates: [CLLocationCoordinate2D] = []
         for candidate in ordered {
+            // MapKit 在中国地区不做坐标偏移，底图就是 GCJ-02（高德）位置。
+            // 高德路线返回的 polyline 本身就是 GCJ-02，直接给 MapKit 才能和底图道路对齐。
+            // 之前错误地转成了 WGS-84，导致整条路线偏离底图 ~300-500 米。
             let coordinates = candidate.route.polyline.map { point in
-                let wgs84 = ChinaCoordinateTransform.gcj02ToWGS84(point)
-                return CLLocationCoordinate2D(
-                    latitude: wgs84.latitudeDeg,
-                    longitude: wgs84.longitudeDeg
+                CLLocationCoordinate2D(
+                    latitude: point.latitudeDeg,
+                    longitude: point.longitudeDeg
                 )
             }
             guard coordinates.count >= 2 else { continue }
@@ -69,10 +71,15 @@ struct RouteOverviewMap: UIViewRepresentable {
         }
 
         if let origin {
+            // origin 来自 CoreLocation（WGS-84），需要转成 GCJ-02 才能和高德底图对齐
+            let gcj02 = ChinaCoordinateTransform.wgs84ToGCJ02(WGS84Point(
+                longitudeDeg: origin.longitudeDeg,
+                latitudeDeg: origin.latitudeDeg
+            ))
             let annotation = MKPointAnnotation()
             annotation.coordinate = CLLocationCoordinate2D(
-                latitude: origin.latitudeDeg,
-                longitude: origin.longitudeDeg
+                latitude: gcj02.latitudeDeg,
+                longitude: gcj02.longitudeDeg
             )
             annotation.title = "当前位置"
             annotation.subtitle = "moto-start"
@@ -80,6 +87,7 @@ struct RouteOverviewMap: UIViewRepresentable {
             allCoordinates.append(annotation.coordinate)
         }
 
+        // destination 来自高德搜索（GCJ-02），直接用
         let destinationAnnotation = MKPointAnnotation()
         destinationAnnotation.coordinate = CLLocationCoordinate2D(
             latitude: destination.latitudeDeg,
