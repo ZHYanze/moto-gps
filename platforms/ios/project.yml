@@ -62,9 +62,9 @@ targets:
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false
           NSExceptionDomains:
-            nas.imzyz.com:
+            "nas.imzyz.com":
               NSExceptionAllowsInsecureHTTPLoads: true
-            192.168.31.101:
+            "192.168.31.101":
               NSExceptionAllowsInsecureHTTPLoads: true
         MOTOGPSGatewayBaseURL: https://example.invalid/moto-gps/api/
         UISupportedInterfaceOrientations:
