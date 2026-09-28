@@ -246,7 +246,8 @@ actor MapTileCache {
         if let request = inFlight[tile] { return try await request.value }
         if !refresh {
             let delay = max(0, nextBulkRequestAt.timeIntervalSinceNow)
-            nextBulkRequestAt = Date().addingTimeInterval(delay + 0.25)
+            // 自托管后端并发能力强，间隔从 0.25s 降到 0.02s
+            nextBulkRequestAt = Date().addingTimeInterval(delay + 0.02)
             if delay > 0 { try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000)) }
             try Task.checkCancellation()
             guard currentLoader == loaderGeneration else { throw CancellationError() }
@@ -527,18 +528,28 @@ final class SurroundingMapStore: ObservableObject {
                 guard !Task.isCancelled, self.downloadGeneration == current else { return }
                 self.activeDownloadID = id
                 let tiles = try await self.cache.tiles(for: id)
-                var verifiedBytes: Int64 = 0
                 await self.reloadPacks()
-                for (index, tile) in tiles.enumerated() {
+                // 分批并发下载：每批 8 个，比原来串行快 ~8 倍
+                let batchSize = 8
+                var completed = 0
+                for start in stride(from: 0, to: tiles.count, by: batchSize) {
                     try Task.checkCancellation()
-                    _ = try await self.cache.fetch(tile, refresh: false)
-                    try Task.checkCancellation()
-                    guard self.downloadGeneration == current else { return }
-                    self.downloadProgress = Double(index + 1) / Double(tiles.count)
-                    verifiedBytes += await self.cache.byteCount(of: tile)
-                    let size = ByteCountFormatter.string(fromByteCount: verifiedBytes, countStyle: .file)
-                    self.downloadMessage = "已下载 \(size) · \(Int(self.downloadProgress * 100))%"
+                    let batch = Array(tiles[start..<min(start + batchSize, tiles.count)])
+                    try await withThrowingTaskGroup(of: Void.self) { group in
+                        for tile in batch {
+                            group.addTask { [cache = self.cache] in
+                                _ = try await cache.fetch(tile, refresh: false)
+                            }
+                        }
+                        for try await _ in group {}
+                    }
+                    completed += batch.count
+                    await MainActor.run {
+                        self.downloadProgress = Double(completed) / Double(tiles.count)
+                        self.downloadMessage = "已下载 \(completed)/\(tiles.count)"
+                    }
                 }
+                self.downloadProgress = 1.0
                 self.downloadMessage = "下载完成，可离线使用"
             } catch is CancellationError {
                 if self.downloadGeneration == current { self.downloadMessage = "下载已暂停，可继续下载" }
@@ -638,8 +649,13 @@ final class SurroundingMapStore: ObservableObject {
     private static func httpLoader(baseURL: URL) -> MapTileCache.Loader {
         { tile in
             let url = baseURL.appendingPathComponent("v1/map/tiles/\(tile.z)/\(tile.x)/\(tile.y)")
+            // 允许 HTTPS 或 localhost；内网 HTTP 地址由 ATS 例外放行
             guard url.scheme == "https" || ["localhost", "127.0.0.1"].contains(url.host ?? "") else {
-                throw SurroundingMapError.invalidResponse
+                // 内网 HTTP 测试地址（由 project.yml ATS 例外放行）
+                let allowedHTTPHosts: Set<String> = ["nas.imzyz.com", "192.168.31.101"]
+                guard url.scheme == "http", let host = url.host, allowedHTTPHosts.contains(host) else {
+                    throw SurroundingMapError.invalidResponse
+                }
             }
             var request = URLRequest(url: url)
             request.timeoutInterval = 15
