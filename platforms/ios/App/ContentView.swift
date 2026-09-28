@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var showsDeviceDetails = false
     @State private var showsMapDownloads = false
     @State private var showsDataUse = false
+    @State private var showsGatewaySettings = false
 
     var body: some View {
         NavigationStack(path: navigationPath) {
@@ -44,6 +45,7 @@ struct ContentView: View {
             )
         }
         .sheet(isPresented: $showsDataUse) { DataUseView() }
+        .sheet(isPresented: $showsGatewaySettings) { GatewaySettingsView(model: model) }
     }
 
     // Derive the stack from the session instead of synchronizing two mutable
@@ -69,6 +71,16 @@ struct ContentView: View {
 
     private var homeScreen: some View {
         List {
+            if !model.isGatewayConfigured {
+                Section {
+                    Button { showsGatewaySettings = true } label: {
+                        Label("设置导航网关", systemImage: "network")
+                    }
+                    .accessibilityIdentifier("gateway-setup-button")
+                } footer: {
+                    Text("填写你部署的网关地址后，就可以搜索地点和规划路线。")
+                }
+            }
             Section { searchField }
             if !model.destinationQuery.isEmpty {
                 searchResultsSection
@@ -98,6 +110,11 @@ struct ContentView: View {
                     Text("连接圆屏后，导航指引会自动同步。")
                 }
                 Section {
+                    Button { showsGatewaySettings = true } label: {
+                        Label("网关设置", systemImage: "network")
+                            .foregroundStyle(Color.primary)
+                    }
+                    .accessibilityIdentifier("gateway-settings-button")
                     Button { showsDataUse = true } label: {
                         Label("隐私与数据", systemImage: "hand.raised")
                             .foregroundStyle(Color.primary)
@@ -110,6 +127,11 @@ struct ContentView: View {
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle("出发")
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button { showsGatewaySettings = true } label: { Image(systemName: "gearshape") }
+                    .accessibilityLabel("网关设置")
+                    .accessibilityIdentifier("gateway-settings-toolbar")
+            }
             ToolbarItem(placement: .topBarTrailing) { deviceToolbarButton }
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()

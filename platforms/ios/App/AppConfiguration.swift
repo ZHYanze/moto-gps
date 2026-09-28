@@ -1,14 +1,15 @@
 import Foundation
+import MotoNavigationCore
 
 enum AppConfiguration {
     static var gatewayBaseURL: URL {
-        if let value = Bundle.main.object(forInfoDictionaryKey: "MOTOGPSGatewayBaseURL") as? String,
-           let url = URL(string: value)
-        {
-            return url
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--moto-reset-gateway") {
+            UserDefaults.standard.removeObject(forKey: GatewayConfiguration.defaultsKey)
         }
-        // Public sources intentionally do not use the author's private gateway.
-        // Configure MOTOGPSGatewayBaseURL in project.yml, then run xcodegen.
-        return URL(string: "https://example.invalid/moto-gps/api/")!
+        #endif
+        return GatewayConfiguration.resolvedURL(
+            bundledAddress: Bundle.main.object(forInfoDictionaryKey: "MOTOGPSGatewayBaseURL") as? String
+        ) ?? URL(string: "https://example.invalid/moto-gps/api/")!
     }
 }

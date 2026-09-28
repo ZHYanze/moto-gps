@@ -282,3 +282,36 @@ final class SurroundingMapStoreTests: XCTestCase {
         store.reset()
     }
 }
+
+private actor DeferredGatewayLoader {
+    private var continuation: CheckedContinuation<Data, Never>?
+    func load() async -> Data { await withCheckedContinuation { continuation = $0 } }
+    func waitForStart() async {
+        while continuation == nil { await Task.yield() }
+    }
+    func finish(_ data: Data) { continuation?.resume(returning: data); continuation = nil }
+}
+
+extension SurroundingMapStoreTests {
+    func testChangingGatewayRejectsLateOldResponseAndRetainsDownloadedTiles() async throws {
+        let root = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let tile = MapTileID(x: 1, y: 2)
+        let gate = DeferredGatewayLoader()
+        let cache = MapTileCache(root: root, loader: { _ in await gate.load() })
+        let oldRequest = Task { try await cache.fetch(tile, refresh: true) }
+        await gate.waitForStart()
+        await cache.replaceLoader { try mapTileTestData($0, roadCount: 2) }
+        let newTile = try await cache.fetch(tile, refresh: true)
+        XCTAssertEqual(newTile.roads.count, 2)
+        // The old transport deliberately ignores cancellation until it returns.
+        await gate.finish(try mapTileTestData(tile, roadCount: 1))
+        do { _ = try await oldRequest.value; XCTFail("Old gateway response must be discarded") }
+        catch is CancellationError { }
+        let cached = try await cache.cached(tile)
+        XCTAssertEqual(cached?.roads.count, 2)
+        await cache.replaceLoader { _ in throw URLError(.notConnectedToInternet) }
+        let offline = try await cache.fetch(tile, refresh: false)
+        XCTAssertEqual(offline.roads.count, 2)
+    }
+}

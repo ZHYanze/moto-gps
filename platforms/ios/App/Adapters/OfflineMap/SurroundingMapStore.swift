@@ -106,7 +106,8 @@ actor MapTileCache {
     }
 
     private let root: URL
-    private let loader: Loader
+    private var loader: Loader
+    private var loaderGeneration: UInt64 = 0
     private let cacheLimit: Int64
     private let cacheTileLimit: Int
     private let packLimit: Int64
@@ -229,7 +230,16 @@ actor MapTileCache {
         }
     }
 
+    func replaceLoader(_ newLoader: @escaping Loader) {
+        loaderGeneration &+= 1
+        inFlight.values.forEach { $0.cancel() }
+        inFlight.removeAll()
+        loader = newLoader
+        nextBulkRequestAt = .distantPast
+    }
+
     func fetch(_ tile: MapTileID, refresh: Bool) async throws -> MapTileDocument {
+        let currentLoader = loaderGeneration
         try initialize()
         guard tile.isValid else { throw SurroundingMapError.invalidTile }
         if !refresh, let value = try cached(tile) { return value }
@@ -239,6 +249,7 @@ actor MapTileCache {
             nextBulkRequestAt = Date().addingTimeInterval(delay + 0.25)
             if delay > 0 { try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000)) }
             try Task.checkCancellation()
+            guard currentLoader == loaderGeneration else { throw CancellationError() }
             if let value = try cached(tile) { return value }
             if let request = inFlight[tile] { return try await request.value }
         }
@@ -246,12 +257,17 @@ actor MapTileCache {
         let request = Task<MapTileDocument, Error> { [self, loader] in
             let data = try await loader(tile)
             let document = try MapTileDocument.decode(data, expectedTile: tile)
-            guard writeEpochs[tile, default: 0] == epoch else { throw CancellationError() }
+            try Task.checkCancellation()
+            guard currentLoader == loaderGeneration, writeEpochs[tile, default: 0] == epoch else {
+                throw CancellationError()
+            }
             try write(data, tile: tile)
             return document
         }
         inFlight[tile] = request
-        defer { inFlight[tile] = nil }
+        defer {
+            if currentLoader == loaderGeneration { inFlight[tile] = nil }
+        }
         return try await request.value
     }
 
@@ -470,6 +486,12 @@ final class SurroundingMapStore: ObservableObject {
             }
             await self.reloadPacks()
         }
+    }
+
+    func changeGateway(to baseURL: URL) async {
+        reset()
+        cancelDownload()
+        await cache.replaceLoader(Self.httpLoader(baseURL: baseURL))
     }
 
     func reset() {

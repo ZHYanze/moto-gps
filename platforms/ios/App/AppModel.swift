@@ -26,11 +26,12 @@ final class AppModel: ObservableObject {
     private let bluetooth = ESP32BLECentral()
     private let liveLocation = CoreLocationNavigationSource()
     private let searchLocation = SearchLocationBiasSource()
-    private let liveRouteProvider: AmapGatewayRouteProvider
-    private let placeProvider: AmapGatewayPlaceProvider
+    private var liveRouteProvider: AmapGatewayRouteProvider
+    private var placeProvider: AmapGatewayPlaceProvider
     private let mediaController = AppleMusicRemoteController()
     let surroundingMap: SurroundingMapStore
-    let mapGatewayBaseURL: URL
+    @Published private(set) var mapGatewayBaseURL: URL
+    @Published private(set) var isUpdatingGateway = false
     private var runtime: SharedNavigationRuntime?
     private var placeSearchTask: Task<Void, Never>?
     private var routePreviewTask: Task<Void, Never>?
@@ -99,6 +100,10 @@ final class AppModel: ObservableObject {
             }
         }
 
+        #if DEBUG
+        // Offline UI checks must not request device permissions or contact services.
+        if ProcessInfo.processInfo.arguments.contains("--moto-ui-offline") { return }
+        #endif
         searchLocation.prepare()
         mediaController.start()
         bluetooth.connect()
@@ -117,6 +122,25 @@ final class AppModel: ObservableObject {
     deinit {
         placeSearchTask?.cancel()
         routePreviewTask?.cancel()
+    }
+
+    var isGatewayConfigured: Bool {
+        (try? GatewayConfiguration.normalizedURL(mapGatewayBaseURL.absoluteString)) != nil
+    }
+
+    func saveGatewayAddress(_ address: String) async throws {
+        guard !isNavigationActive, !isUpdatingGateway else {
+            throw GatewaySettingsError.navigationActive
+        }
+        let url = try GatewayConfiguration.normalizedURL(address)
+        isUpdatingGateway = true
+        defer { isUpdatingGateway = false }
+        clearDestination()
+        await surroundingMap.changeGateway(to: url)
+        liveRouteProvider = AmapGatewayRouteProvider(baseURL: url)
+        placeProvider = AmapGatewayPlaceProvider(baseURL: url)
+        mapGatewayBaseURL = url
+        try GatewayConfiguration.save(url.absoluteString)
     }
 
     var deviceReady: Bool {
@@ -213,7 +237,7 @@ final class AppModel: ObservableObject {
     }
 
     func destinationQueryDidChange() {
-        guard !isNavigationActive else { return }
+        guard !isNavigationActive, !isUpdatingGateway else { return }
         navigationFailure = nil
         let query = destinationQuery.trimmingCharacters(in: .whitespacesAndNewlines)
         if selectedPlace?.name == query {
@@ -233,13 +257,14 @@ final class AppModel: ObservableObject {
     }
 
     func submitDestinationSearch() {
-        guard !isNavigationActive else { return }
+        guard !isNavigationActive, !isUpdatingGateway else { return }
         searchLocation.refresh()
         let query = destinationQuery.trimmingCharacters(in: .whitespacesAndNewlines)
         schedulePlaceSearch(query: query, delay: .zero)
     }
 
     func selectPlace(_ place: PlaceSearchResult) {
+        guard !isUpdatingGateway else { return }
         placeSearchTask?.cancel()
         isSearchingPlaces = false
         placeSearchFailure = nil
@@ -279,6 +304,10 @@ final class AppModel: ObservableObject {
     }
 
     func startNavigation() {
+        guard !isUpdatingGateway, isGatewayConfigured else {
+            navigationFailure = "请先在网关设置中填写服务地址"
+            return
+        }
         guard let selectedPlace else {
             navigationFailure = "请先从搜索结果中选择终点"
             return
@@ -320,7 +349,7 @@ final class AppModel: ObservableObject {
     }
 
     func startDemoNavigation() {
-        guard !isNavigationActive else { return }
+        guard !isNavigationActive, !isUpdatingGateway else { return }
         surroundingMap.reset()
         runtime?.stop()
         let demoSession = DemoNavigationSession()
@@ -366,7 +395,11 @@ final class AppModel: ObservableObject {
     }
 
     func planRoutePreview() {
-        guard !isNavigationActive, selectedPlace != nil else { return }
+        guard !isNavigationActive, !isUpdatingGateway, selectedPlace != nil else { return }
+        guard isGatewayConfigured else {
+            failRoutePreview("请先在网关设置中填写服务地址")
+            return
+        }
         routePreviewGeneration &+= 1
         routePreviewTask?.cancel()
         routePreviewTask = nil
@@ -490,6 +523,12 @@ final class AppModel: ObservableObject {
         placeSearchTask?.cancel()
         placeSearchFailure = nil
 
+        guard !isUpdatingGateway, isGatewayConfigured else {
+            placeResults = []
+            isSearchingPlaces = false
+            if query.count >= 2 { placeSearchFailure = "请先在网关设置中填写服务地址" }
+            return
+        }
         guard query.count >= 2 else {
             placeResults = []
             isSearchingPlaces = false
@@ -591,4 +630,9 @@ final class AppModel: ObservableObject {
         let minutes = max(1, Int(round(Double(seconds) / 60)))
         return minutes >= 60 ? "\(minutes / 60)时\(minutes % 60)分" : "\(minutes)分钟"
     }
+}
+
+private enum GatewaySettingsError: LocalizedError {
+    case navigationActive
+    var errorDescription: String? { "请先结束导航，再更换网关地址。" }
 }

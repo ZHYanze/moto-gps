@@ -69,8 +69,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: org.example.motogps
         PRODUCT_NAME: MOTO GPS
-        MARKETING_VERSION: 0.3.0
-        CURRENT_PROJECT_VERSION: 5
+        MARKETING_VERSION: 0.3.1
+        CURRENT_PROJECT_VERSION: 6
         SWIFT_VERSION: 5.0
         SWIFT_STRICT_CONCURRENCY: targeted
         SWIFT_OBJC_BRIDGING_HEADER: App/MotoGPS-Bridging-Header.h
