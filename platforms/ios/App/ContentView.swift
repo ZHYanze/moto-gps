@@ -16,6 +16,7 @@ struct ContentView: View {
     @State private var showsMapDownloads = false
     @State private var showsDataUse = false
     @State private var showsGatewaySettings = false
+    @State private var showsAboutDeveloper = false
 
     var body: some View {
         NavigationStack(path: navigationPath) {
@@ -46,6 +47,7 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showsDataUse) { DataUseView() }
         .sheet(isPresented: $showsGatewaySettings) { GatewaySettingsView(model: model) }
+        .sheet(isPresented: $showsAboutDeveloper) { aboutDeveloper }
     }
 
     // Derive the stack from the session instead of synchronizing two mutable
@@ -127,11 +129,7 @@ struct ContentView: View {
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle("出发")
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button { showsGatewaySettings = true } label: { Image(systemName: "gearshape") }
-                    .accessibilityLabel("网关设置")
-                    .accessibilityIdentifier("gateway-settings-toolbar")
-            }
+            ToolbarItem(placement: .topBarLeading) { aboutDeveloperToolbarButton }
             ToolbarItem(placement: .topBarTrailing) { deviceToolbarButton }
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
@@ -815,5 +813,142 @@ struct ContentView: View {
         case "路况顺畅": return .green
         default: return .secondary
         }
+    }
+
+    // MARK: - About developer sheet
+
+    private var aboutDeveloperToolbarButton: some View {
+        Button {
+            searchFocused = false
+            showsAboutDeveloper = true
+        } label: {
+            aboutDeveloperIcon(size: 26)
+        }
+        .accessibilityLabel("关于我")
+        .accessibilityIdentifier("about-developer-button")
+    }
+
+    @ViewBuilder
+    private func aboutDeveloperIcon(size: CGFloat) -> some View {
+        if UIImage(named: "AboutDeveloper") != nil {
+            Image("AboutDeveloper")
+                .resizable()
+                .interpolation(.high)
+                .frame(width: size, height: size)
+                .accessibilityHidden(true)
+        } else {
+            Image(systemName: "info.circle")
+                .resizable()
+                .foregroundStyle(.blue)
+                .frame(width: size, height: size)
+                .accessibilityHidden(true)
+        }
+    }
+
+    private var aboutDeveloper: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(spacing: 12) {
+                        aboutDeveloperIcon(size: 72)
+                        Text("关于我")
+                            .font(.title2.weight(.semibold))
+                        Text("MOTO GPS · 枕月酌专用版")
+                            .font(.footnote)
+                            .foregroundStyle(Color.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 4)
+                    .padding(.bottom, 8)
+
+                    Divider()
+
+                    aboutSection(
+                        title: "项目说明",
+                        rows: [
+                            .text("本项目基于 GitHub 开源项目修改部署。"),
+                            .text("除地图外,所有数据均留存本地。")
+                        ]
+                    )
+
+                    aboutSection(
+                        title: "联系与主页",
+                        rows: [
+                            .link(label: "🫂GitHub", display: "github.com/ZHYanze/moto-gps", url: "https://github.com/ZHYanze/moto-gps"),
+                            .link(label: "✈️TG", display: "t.me/ZHYanze", url: "https://t.me/ZHYanze")
+                        ]
+                    )
+
+                    aboutSection(
+                        title: "自行搭建交流",
+                        rows: [
+                            .text("想研究自行搭建可以联系我,进群交流,需要一定基础。"),
+                            .text("成本很低,一个设备 200+,其他几乎零成本。")
+                        ]
+                    )
+
+                    Spacer(minLength: 8)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .navigationTitle("关于我")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("完成") { showsAboutDeveloper = false }
+                        .accessibilityIdentifier("about-developer-done")
+                }
+            }
+            .accessibilityIdentifier("about-developer-sheet")
+        }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+    }
+
+    private enum AboutRow {
+        case text(String)
+        case link(label: String, display: String, url: String)
+    }
+
+    private func aboutSection(title: String, rows: [AboutRow]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.secondary)
+                .textCase(nil)
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                    switch row {
+                    case .text(let text):
+                        Text(text)
+                            .font(.body)
+                            .foregroundStyle(Color.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    case .link(let label, let display, let url):
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            Text(label)
+                                .font(.body)
+                                .foregroundStyle(Color.primary)
+                            if let parsed = URL(string: url) {
+                                Link(display, destination: parsed)
+                                    .font(.body)
+                                    .foregroundStyle(.blue)
+                                    .underline()
+                            } else {
+                                Text(display)
+                                    .font(.body)
+                                    .foregroundStyle(Color.secondary)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                    }
+                }
+            }
+            .padding(.leading, 4)
+        }
+        .padding(.vertical, 4)
     }
 }
