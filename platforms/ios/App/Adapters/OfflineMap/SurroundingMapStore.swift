@@ -404,10 +404,10 @@ final class SurroundingMapStore: ObservableObject {
                                                             in: .userDomainMask)[0]
             .appendingPathComponent("SurroundingMaps", isDirectory: true)
         cache = MapTileCache(root: storage, loader: loader ?? Self.httpLoader(baseURL: baseURL))
-        let bundled = bundle.url(forResource: "jinan-v1", withExtension: "sqlite")
+        let bundled = bundle.url(forResource: "dalian-v1", withExtension: "sqlite")
         fallback = try? OfflineMapSceneCoordinator.loadIndex(
             databaseURLs: bundled.map { [$0] } ?? [],
-            sampleURL: bundle.url(forResource: "jinan_map_scene_sample", withExtension: "json"))
+            sampleURL: bundle.url(forResource: "dalian_map_scene_sample", withExtension: "json"))
         Task { [weak self] in await self?.reloadPacks() }
     }
 

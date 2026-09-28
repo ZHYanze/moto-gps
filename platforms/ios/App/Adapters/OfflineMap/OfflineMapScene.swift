@@ -410,7 +410,7 @@ final class OfflineMapSceneCoordinator {
     }
 
     convenience init(bundle: Bundle = .main) throws {
-        let databaseName = "jinan-v1"
+        let databaseName = "dalian-v1"
         var databaseURLs: [URL] = []
         if let supportRoot = FileManager.default.urls(
             for: .applicationSupportDirectory,
@@ -425,7 +425,7 @@ final class OfflineMapSceneCoordinator {
             databaseURLs.append(bundledDatabase)
         }
         self.init(index: try Self.loadIndex(databaseURLs: databaseURLs, sampleURL: bundle.url(
-            forResource: "jinan_map_scene_sample",
+            forResource: "dalian_map_scene_sample",
             withExtension: "json"
         )))
     }
