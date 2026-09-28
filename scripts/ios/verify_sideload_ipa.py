@@ -19,7 +19,7 @@ with zipfile.ZipFile(sys.argv[1]) as archive:
     assert not any(p.endswith(('embedded.mobileprovision', '.p12', '.p8', '.pem')) or '/_CodeSignature/' in p for p in names), 'Signing credentials/profile must not be distributed'
     for name in ['NSBluetoothAlwaysUsageDescription', 'NSLocationAlwaysAndWhenInUseUsageDescription', 'NSLocationWhenInUseUsageDescription']:
         assert info.get(name), name
-    for resource in ['PrivacyInfo.xcprivacy', 'NOTICE', 'LICENSE.md', 'THIRD_PARTY_NOTICES.md', 'jinan-v1.sqlite']:
+    for resource in ['PrivacyInfo.xcprivacy', 'NOTICE', 'LICENSE.md', 'THIRD_PARTY_NOTICES.md', 'dalian-v1.sqlite']:
         assert root + resource in names, f'Missing {resource}'
     binary = archive.read(root + info['CFBundleExecutable'])
     magic, cpu = struct.unpack_from('<II', binary)
