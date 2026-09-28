@@ -334,7 +334,7 @@ enum ChinaCoordinateTransform {
         return candidate
     }
 
-    private static func wgs84ToGCJ02(_ point: WGS84Point) -> GCJ02Point {
+    static func wgs84ToGCJ02(_ point: WGS84Point) -> GCJ02Point {
         if point.longitudeDeg < 72.004 || point.longitudeDeg > 137.8347 ||
             point.latitudeDeg < 0.8293 || point.latitudeDeg > 55.8271
         {
