@@ -1125,6 +1125,12 @@ final class ESP32BLECentral: NSObject {
             let heading = state.headingDeg
             let normalized = heading.truncatingRemainder(dividingBy: 360) + (heading < 0 ? 360 : 0)
             input.headingCentiDegrees = UInt16(clamping: Int((normalized * 100).rounded()))
+        } else {
+            // No usable course (stationary, or the first seconds after
+            // pulling away): send an explicit out-of-range sentinel so the
+            // display firmware never mistakes the zero-filled field for a
+            // real heading of true north and drags the map arrow back.
+            input.headingCentiDegrees = 0xFFFF
         }
         input.accuracyDecimeters = UInt16(clamping: Int((state.horizontalAccuracyM * 10).rounded()))
         input.crossTrackDecimeters = UInt16(clamping: Int((state.crossTrackDistanceM * 10).rounded()))
