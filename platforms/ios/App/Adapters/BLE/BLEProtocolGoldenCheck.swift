@@ -53,6 +53,9 @@ enum BLEProtocolGoldenCheck {
         input.totalDistanceM = 14_445
         input.speedDeciKPH = 483
         input.speedLimitKPH = 50
+        // Matches the shared fixture: the C++ fixture leaves battery unset,
+        // which defaults to 255 ("unknown") after the v2 payload revision.
+        input.batteryPercent = 255
         input.headingCentiDegrees = 9_123
         input.accuracyDecimeters = 38
         input.crossTrackDecimeters = 125

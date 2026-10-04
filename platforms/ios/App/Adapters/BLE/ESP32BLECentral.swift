@@ -275,6 +275,9 @@ final class ESP32BLECentral: NSObject {
 
     func connect() {
         trace("connect requested; central=\(central.state.rawValue)")
+        // The 1.75C display has no battery: the on-screen percentage is the
+        // iPhone's, so enable battery monitoring before snapshots start.
+        UIDevice.current.isBatteryMonitoringEnabled = true
         shouldMaintainConnection = true
         reconnectTask?.cancel()
         reconnectTask = nil
@@ -1121,6 +1124,12 @@ final class ESP32BLECentral: NSObject {
         input.totalDistanceM = clampedUInt32(state.totalDistanceM)
         input.speedDeciKPH = UInt16(clamping: Int((state.speedMPS * 36).rounded()))
         input.speedLimitKPH = state.speedLimitKPH
+        // Phone battery is the only battery on this build (the 1.75C display
+        // is USB powered). UIDevice.batteryLevel is -1 until monitoring is
+        // enabled; keep it enabled from launch and send 255 ("unknown") if
+        // the level is still unavailable.
+        let battery = UIDevice.current.batteryLevel
+        input.batteryPercent = battery >= 0 ? UInt8(clamping: Int((battery * 100).rounded())) : 255
         if state.headingDeg.isFinite {
             let heading = state.headingDeg
             let normalized = heading.truncatingRemainder(dividingBy: 360) + (heading < 0 ? 360 : 0)

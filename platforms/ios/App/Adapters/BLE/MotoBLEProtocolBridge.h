@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) uint32_t totalDistanceM;
 @property(nonatomic) uint16_t speedDeciKPH;
 @property(nonatomic) uint16_t speedLimitKPH;
+@property(nonatomic) uint8_t batteryPercent;
 @property(nonatomic) uint16_t headingCentiDegrees;
 @property(nonatomic) uint16_t accuracyDecimeters;
 @property(nonatomic) uint16_t crossTrackDecimeters;

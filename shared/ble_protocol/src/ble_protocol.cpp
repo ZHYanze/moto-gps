@@ -310,7 +310,8 @@ Error validate(const NavigationSnapshot& value) {
     return Error::InvalidEnum;
   }
   if ((value.flags & ~kKnownNavigationFlags) != 0U ||
-      value.heading_cdeg >= 36'000 || value.roundabout_exit > 32) {
+      value.heading_cdeg >= 36'000 || value.roundabout_exit > 32 ||
+      (value.battery_percent > 100 && value.battery_percent != 255)) {
     return Error::OutOfRange;
   }
   if ((value.flags & NavigationHasRouteView) != 0U &&
@@ -524,6 +525,7 @@ BytesResult encode_payload(const T& value) {
     writer.u32(value.total_distance_m);
     writer.u16(value.speed_deci_kph);
     writer.u16(value.speed_limit_kph);
+    writer.u8(value.battery_percent);
     writer.u16(value.heading_cdeg);
     writer.u16(value.accuracy_dm);
     writer.u16(value.cross_track_dm);
@@ -699,6 +701,7 @@ MessageResult decode_navigation_snapshot(ByteView payload) {
     value.total_distance_m = reader.u32();
     value.speed_deci_kph = reader.u16();
     value.speed_limit_kph = reader.u16();
+    value.battery_percent = reader.u8();
     value.heading_cdeg = reader.u16();
     value.accuracy_dm = reader.u16();
     value.cross_track_dm = reader.u16();
@@ -1380,7 +1383,7 @@ bool NavigationSnapshot::operator==(
                   distance_to_maneuver_m,
                   remaining_distance_m, remaining_duration_s,
                   route_progress_m, total_distance_m, speed_deci_kph,
-                  speed_limit_kph,
+                  speed_limit_kph, battery_percent,
                   heading_cdeg, accuracy_dm, cross_track_dm,
                   roundabout_exit, road_name, instruction) ==
          std::tie(rhs.state, rhs.network, rhs.display_page, rhs.maneuver,
@@ -1389,7 +1392,7 @@ bool NavigationSnapshot::operator==(
                   rhs.distance_to_maneuver_m, rhs.remaining_distance_m,
                   rhs.remaining_duration_s, rhs.route_progress_m,
                   rhs.total_distance_m, rhs.speed_deci_kph,
-                  rhs.speed_limit_kph,
+                  rhs.speed_limit_kph, rhs.battery_percent,
                   rhs.heading_cdeg, rhs.accuracy_dm, rhs.cross_track_dm,
                   rhs.roundabout_exit, rhs.road_name, rhs.instruction);
 }

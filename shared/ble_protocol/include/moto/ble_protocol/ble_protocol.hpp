@@ -14,7 +14,7 @@ using TimestampMs = std::uint64_t;
 
 constexpr std::uint8_t kFrameMagic = 0xB7;
 constexpr std::uint8_t kProtocolVersion = 1;
-constexpr std::uint8_t kPayloadRevision = 1;
+constexpr std::uint8_t kPayloadRevision = 2;
 // ESP32 is the GATT server/peripheral. The phone writes PhoneToDevice and
 // subscribes to DeviceToPhone notifications.
 inline constexpr char kServiceUuid[] =
@@ -392,6 +392,8 @@ struct NavigationSnapshot {
   std::uint32_t total_distance_m = 0;
   std::uint16_t speed_deci_kph = 0;
   std::uint16_t speed_limit_kph = 0;
+  // 0-100 real percentage; 255 means "unknown" (phone battery monitoring off).
+  std::uint8_t battery_percent = 255;
   std::uint16_t heading_cdeg = 0;
   std::uint16_t accuracy_dm = 0;
   std::uint16_t cross_track_dm = 0;
