@@ -1,6 +1,7 @@
 @preconcurrency import CoreBluetooth
 import Foundation
 import MotoNavigationCore
+import UIKit
 
 struct BLEDeviceSnapshot: Equatable {
     enum Connection: Equatable {
@@ -196,10 +197,12 @@ final class ESP32BLECentral: NSObject {
 
     private static let restorationID = "org.example.motogps.central"
     private static let knownPeripheralKey = "MotoGPS.KnownPeripheralIdentifier"
-    /// Keep the radio feed at the frozen v1 protocol ceiling of 5 Hz. The
-    /// terminal interpolates heading/position locally at 40 Hz, so animation
-    /// remains smooth without forcing a full LVGL redraw ten times per second.
-    private static let navigationTransmitIntervalMs: UInt64 = 200
+    /// The terminal interpolates heading/position locally at 40 Hz, so the
+    /// radio feed only needs to stay ahead of the rider's position updates.
+    /// A 100 ms cadence (10 Hz) plus the 512-byte MTU keeps a single snapshot
+    /// frame per interval, roughly halving end-to-end latency versus the old
+    /// 200 ms / 5 Hz ceiling without saturating the link.
+    private static let navigationTransmitIntervalMs: UInt64 = 100
     /// CoreBluetooth's `canSendWriteWithoutResponse` only reflects the
     /// phone-side buffer, not how quickly the terminal application drains its
     /// RX queue. Pace application frames instead of bursting every fragment in
@@ -816,10 +819,10 @@ final class ESP32BLECentral: NSObject {
         pendingNavigationState = nil
         let geometrySignature = Self.routeGeometrySignature(for: state)
         do {
-            // NavigationSnapshot is at most 211 bytes in v1, hence at most two
-            // 182-byte GATT values. Use that conservative upper bound before
-            // touching the stateful codec so queue-reset recovery does not
-            // require encoding the snapshot first and consuming its sequence.
+            // NavigationSnapshot fits in one 509-byte v2 GATT value at the
+            // negotiated 512 MTU. Keep the conservative two-frame budget here
+            // so queue-reset recovery does not require encoding the snapshot
+            // first and consuming its sequence.
             let geometryRequired = BLEOutboundBatch.requiresGeometry(
                 hasGeometry: geometrySignature != nil,
                 geometryChanged: geometrySignature != lastRouteGeometrySignature,
