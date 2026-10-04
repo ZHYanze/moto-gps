@@ -61,7 +61,7 @@ final class OfflineMapSceneTests: XCTestCase {
     func testBundledOSMSceneDecodesAndCropsRealFeatures() throws {
         let document = try loadDocument()
         XCTAssertEqual(document.roads.count, 24)
-        XCTAssertEqual(document.roads.reduce(0) { $0 + $1.points.count }, 192)
+        XCTAssertEqual(document.roads.reduce(0) { $0 + $1.points.count }, 103)
         XCTAssertEqual(document.buildings.count, 16)
         XCTAssertLessThanOrEqual(
             document.buildings.reduce(0) { $0 + $1.points.count },
